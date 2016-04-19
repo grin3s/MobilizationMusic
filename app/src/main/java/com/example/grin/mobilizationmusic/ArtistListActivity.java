@@ -1,8 +1,12 @@
 package com.example.grin.mobilizationmusic;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,12 +34,22 @@ import java.util.List;
  * item details side-by-side using two vertical panes.
  */
 public class ArtistListActivity extends AppCompatActivity {
+    public final static String TAG = "ArtistListActivity";
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
     private boolean mTwoPane;
+    Account mAccount;
+    // The authority for the sync adapter's content provider
+    public static final String AUTHORITY = "com.example.grin.mobilizationmusic.provider";
+
+    public static final String ACCOUNT_TYPE = "example.com";
+    // The account name
+    public static final String ACCOUNT = "dummyaccount";
+
+    private static final String PREF_SETUP_COMPLETE = "setup_complete";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +59,8 @@ public class ArtistListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+
+        mAccount = CreateSyncAccount(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +82,50 @@ public class ArtistListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+    }
+
+    public static Account CreateSyncAccount(Context context) {
+        Log.i(TAG, "CreateSyncAccoun");
+        boolean newAccount = false;
+        boolean setupComplete = PreferenceManager
+                .getDefaultSharedPreferences(context).getBoolean(PREF_SETUP_COMPLETE, false);
+
+        // Create account, if it's missing. (Either first run, or user has deleted account.)
+        Account account = new Account(ACCOUNT, ACCOUNT_TYPE);
+        AccountManager accountManager =
+                (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        if (accountManager.addAccountExplicitly(account, null, null)) {
+            // Inform the system that this account supports sync
+            ContentResolver.setIsSyncable(account, AUTHORITY, 1);
+            // Inform the system that this account is eligible for auto sync when the network is up
+            ContentResolver.setSyncAutomatically(account, AUTHORITY, true);
+            // Recommend a schedule for automatic synchronization. The system may modify this based
+            // on other scheduled syncs and network utilization.
+//            ContentResolver.addPeriodicSync(
+//                    account, AUTHORITY, new Bundle(), SYNC_FREQUENCY);
+            newAccount = true;
+        }
+
+        // Schedule an initial sync if we detect problems with either our account or our local
+        // data has been deleted. (Note that it's possible to clear app data WITHOUT affecting
+        // the account list, so wee need to check both.)
+        if (newAccount || !setupComplete) {
+            PreferenceManager.getDefaultSharedPreferences(context).edit()
+                    .putBoolean(PREF_SETUP_COMPLETE, true).commit();
+        }
+        TriggerRefresh();
+        return account;
+    }
+
+    public static void TriggerRefresh() {
+        Bundle b = new Bundle();
+        // Disable sync backoff and ignore sync preferences. In other words...perform sync NOW!
+        b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        b.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(
+                new Account(ACCOUNT, ACCOUNT_TYPE),
+                AUTHORITY,
+                b);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
