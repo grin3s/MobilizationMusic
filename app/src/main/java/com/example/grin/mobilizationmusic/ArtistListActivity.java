@@ -5,9 +5,14 @@ import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
 
 
@@ -35,8 +41,30 @@ import java.util.List;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class ArtistListActivity extends AppCompatActivity {
+public class ArtistListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
     public final static String TAG = "ArtistListActivity";
+
+    // Column indexes. The index of a column in the Cursor is the same as its relative position in
+    // the projection.
+    /** Column index for _ID */
+    private static final int COLUMN_ID = 0;
+    /** Column index for name */
+    private static final int COLUMN_NAME = 1;
+
+
+    /**
+     * List of Cursor columns to read from when preparing an adapter to populate the ListView.
+     */
+    private static final String[] FROM_COLUMNS = new String[]{
+            ArtistsContract.Artist.COLUMN_NAME_NAME
+    };
+
+    /**
+     * List of Views which will be populated by Cursor data.
+     */
+    private static final int[] TO_FIELDS = new int[]{
+            R.id.list_artist_name
+    };
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -44,6 +72,7 @@ public class ArtistListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
     Account mAccount;
+    SimpleCursorAdapter mAdapter;
     // The authority for the sync adapter's content provider
 
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
@@ -68,9 +97,29 @@ public class ArtistListActivity extends AppCompatActivity {
             }
         });
 
-        View recyclerView = findViewById(R.id.artist_list);
-        assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+        ListView listView = (ListView) findViewById(R.id.artist_list);
+        mAdapter = new SimpleCursorAdapter(
+                this,       // Current context
+                R.layout.artist_list_content,
+                null,                // Cursor
+                FROM_COLUMNS,        // Cursor columns to use
+                TO_FIELDS,           // Layout fields to use
+                0                    // No flags
+        );
+        mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int i) {
+                if (i == ArtistsContract.Artist.COLUMN_ID_NAME) {
+                    ((TextView) view).setText(cursor.getString(i));
+                    return true;
+                } else {
+                    // Let SimpleCursorAdapter handle other fields automatically
+                    return false;
+                }
+            }
+        });
+        listView.setAdapter(mAdapter);
+        getLoaderManager().initLoader(0, null, this);
 
         if (findViewById(R.id.artist_detail_container) != null) {
             // The detail container view will be present only in the
@@ -79,6 +128,38 @@ public class ArtistListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        // We only have one loader, so we can ignore the value of i.
+        // (It'll be '0', as set in onCreate().)
+        return new CursorLoader(this,  // Context
+                ArtistsContract.Artist.CONTENT_URI, // URI
+                null,                // Projection
+                null,                           // Selection
+                null,                           // Selection args
+                null); // Sort
+    }
+
+    /**
+     * Move the Cursor returned by the query into the ListView adapter. This refreshes the existing
+     * UI with the data in the Cursor.
+     */
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        mAdapter.changeCursor(cursor);
+    }
+
+    /**
+     * Called when the ContentObserver defined for the content provider detects that data has
+     * changed. The ContentObserver resets the loader, and then re-runs the loader. In the adapter,
+     * set the Cursor value to null. This removes the reference to the Cursor, allowing it to be
+     * garbage-collected.
+     */
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        mAdapter.changeCursor(null);
     }
 
     public static Account CreateSyncAccount(Context context) {
@@ -125,76 +206,5 @@ public class ArtistListActivity extends AppCompatActivity {
                 b);
     }
 
-    private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(DummyContent.ITEMS));
-    }
 
-    public class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
-
-        private final List<DummyContent.DummyItem> mValues;
-
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items) {
-            mValues = items;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.artist_list_content, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mItem = mValues.get(position);
-            //holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
-
-            holder.mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        arguments.putString(ArtistDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-                        ArtistDetailFragment fragment = new ArtistDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.artist_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, ArtistDetailActivity.class);
-                        intent.putExtra(ArtistDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-
-                        context.startActivity(intent);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mValues.size();
-        }
-
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            public final View mView;
-            //public final TextView mIdView;
-            public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
-
-            public ViewHolder(View view) {
-                super(view);
-                mView = view;
-                //mIdView = (TextView) view.findViewById(R.id.id);
-                mContentView = (TextView) view.findViewById(R.id.list_artist_name);
-            }
-
-            @Override
-            public String toString() {
-                return super.toString() + " '" + mContentView.getText() + "'";
-            }
-        }
-    }
 }
