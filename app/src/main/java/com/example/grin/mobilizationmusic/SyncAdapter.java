@@ -6,6 +6,7 @@ import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.content.SyncResult;
@@ -16,6 +17,8 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.JsonReader;
 import android.util.Log;
+
+import com.example.grin.mobilizationmusic.provider.ArtistsContract;
 
 import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
@@ -51,10 +54,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      */
     private final ContentResolver mContentResolver;
 
-    private class Artist {
+    private class ArtistData {
         String name;
 
-        public Artist(String in_name) {
+        public ArtistData(String in_name) {
             name = in_name;
         }
     }
@@ -77,9 +80,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mContentResolver = context.getContentResolver();
     }
 
-    private List readJSONFromStream(InputStream stream) throws IOException {
+    private ArrayList<ArtistData> readJSONFromStream(InputStream stream) throws IOException {
         JsonReader reader = new JsonReader(new InputStreamReader(stream));
-        List artists = new ArrayList();
+        ArrayList<ArtistData> artists = new ArrayList<ArtistData>();
         try {
             reader.beginArray();
             while (reader.hasNext()) {
@@ -89,13 +92,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     String key = reader.nextName();
                     if (key.equals("name")) {
                         name = reader.nextString();
+                        artists.add(new ArtistData(name));
                         Log.i(TAG + ":name", name);
                     } else {
                         reader.skipValue();
                     }
                 }
                 reader.endObject();
-                artists.add(new Artist(name));
             }
         }
         finally {
@@ -114,11 +117,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             try {
                 Log.i(TAG, "Streaming data from network: " + location);
+                // creating a stream to read json
                 stream = downloadUrl(location);
-                List artists = readJSONFromStream(stream);
+                // reading an ArrayList of ArtistData for the received json
+                ArrayList<ArtistData> artists = readJSONFromStream(stream);
+                ContentValues[] cvArray = new ContentValues[artists.size()];
+                for (int i = 0; i < artists.size(); i++) {
+                    cvArray[i] = new ContentValues();
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_NAME, artists.get(i).name);
+                }
+                getContext().getContentResolver().bulkInsert(ArtistsContract.Artist.CONTENT_URI, cvArray);
+            } finally {
                 // Makes sure that the InputStream is closed after the app is
                 // finished using it.
-            } finally {
                 if (stream != null) {
                     stream.close();
                 }

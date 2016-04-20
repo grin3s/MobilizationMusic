@@ -16,6 +16,11 @@ import android.os.Bundle;
  */
 
 public class Authenticator extends AbstractAccountAuthenticator {
+    public static final String AUTHORITY = "com.example.grin.mobilizationmusic.provider";
+
+    public static final String ACCOUNT_TYPE = "example.com";
+    // The account name
+    public static final String ACCOUNT = "dummyaccount";
     // Simple constructor
     public Authenticator(Context context) {
         super(context);

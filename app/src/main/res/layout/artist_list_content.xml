@@ -21,11 +21,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="horizontal"
+    android:id="@+id/artist_list_content">
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:src="@mipmap/ic_launcher"
         android:id="@+id/list_image_view"/>
 
     <LinearLayout
@@ -37,5 +39,4 @@
             android:layout_height="wrap_content"
             android:id="@+id/list_artist_name"/>
     </LinearLayout>
-
 </LinearLayout>

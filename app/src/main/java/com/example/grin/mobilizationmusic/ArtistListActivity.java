@@ -21,7 +21,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
+import com.example.grin.mobilizationmusic.authentication.Authenticator;
 import com.example.grin.mobilizationmusic.dummy.DummyContent;
+import com.example.grin.mobilizationmusic.provider.ArtistsContract;
 
 import java.util.List;
 
@@ -43,11 +45,6 @@ public class ArtistListActivity extends AppCompatActivity {
     private boolean mTwoPane;
     Account mAccount;
     // The authority for the sync adapter's content provider
-    public static final String AUTHORITY = "com.example.grin.mobilizationmusic.provider";
-
-    public static final String ACCOUNT_TYPE = "example.com";
-    // The account name
-    public static final String ACCOUNT = "dummyaccount";
 
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
 
@@ -91,14 +88,14 @@ public class ArtistListActivity extends AppCompatActivity {
                 .getDefaultSharedPreferences(context).getBoolean(PREF_SETUP_COMPLETE, false);
 
         // Create account, if it's missing. (Either first run, or user has deleted account.)
-        Account account = new Account(ACCOUNT, ACCOUNT_TYPE);
+        Account account = new Account(Authenticator.ACCOUNT, Authenticator.ACCOUNT_TYPE);
         AccountManager accountManager =
                 (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
         if (accountManager.addAccountExplicitly(account, null, null)) {
             // Inform the system that this account supports sync
-            ContentResolver.setIsSyncable(account, AUTHORITY, 1);
+            ContentResolver.setIsSyncable(account, ArtistsContract.CONTENT_AUTHORITY, 1);
             // Inform the system that this account is eligible for auto sync when the network is up
-            ContentResolver.setSyncAutomatically(account, AUTHORITY, true);
+            ContentResolver.setSyncAutomatically(account, ArtistsContract.CONTENT_AUTHORITY, true);
             // Recommend a schedule for automatic synchronization. The system may modify this based
             // on other scheduled syncs and network utilization.
 //            ContentResolver.addPeriodicSync(
@@ -123,8 +120,8 @@ public class ArtistListActivity extends AppCompatActivity {
         b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         b.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(
-                new Account(ACCOUNT, ACCOUNT_TYPE),
-                AUTHORITY,
+                new Account(Authenticator.ACCOUNT, Authenticator.ACCOUNT_TYPE),
+                ArtistsContract.CONTENT_AUTHORITY,
                 b);
     }
 
