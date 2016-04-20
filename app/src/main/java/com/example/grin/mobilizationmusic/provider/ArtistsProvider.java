@@ -150,12 +150,13 @@ public class ArtistsProvider extends ContentProvider {
 
         private static final String TYPE_TEXT = " TEXT";
 //        private static final String TYPE_INTEGER = " INTEGER";
-//        private static final String COMMA_SEP = ",";
+        private static final String COMMA_SEP = ",";
         /** SQL statement to create "entry" table. */
         private static final String SQL_CREATE_ENTRIES =
                 "CREATE TABLE " + ArtistsContract.Artist.TABLE_NAME + " (" +
                         ArtistsContract.Artist._ID + " INTEGER PRIMARY KEY," +
-                        ArtistsContract.Artist.COLUMN_NAME_NAME + TYPE_TEXT + ")";
+                        ArtistsContract.Artist.COLUMN_NAME_NAME + TYPE_TEXT + COMMA_SEP +
+                        ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER + TYPE_TEXT + ")";
 
         /** SQL statement to drop "entry" table. */
         private static final String SQL_DELETE_ENTRIES =

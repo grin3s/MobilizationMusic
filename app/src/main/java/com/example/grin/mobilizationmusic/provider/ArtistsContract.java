@@ -46,6 +46,6 @@ public class ArtistsContract {
          * Name of the artist
          */
         public static final String COLUMN_NAME_NAME = "name";
-        public static final int COLUMN_ID_NAME = 0;
+        public static final String COLUMN_NAME_SMALL_COVER = "small_cover";
     }
 }

@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -30,6 +31,7 @@ import android.widget.TextView;
 import com.example.grin.mobilizationmusic.authentication.Authenticator;
 import com.example.grin.mobilizationmusic.dummy.DummyContent;
 import com.example.grin.mobilizationmusic.provider.ArtistsContract;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -50,20 +52,23 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     private static final int COLUMN_ID = 0;
     /** Column index for name */
     private static final int COLUMN_NAME = 1;
+    private static final int COLUMN_SMALL_COVER = 2;
 
 
     /**
      * List of Cursor columns to read from when preparing an adapter to populate the ListView.
      */
     private static final String[] FROM_COLUMNS = new String[]{
-            ArtistsContract.Artist.COLUMN_NAME_NAME
+            ArtistsContract.Artist.COLUMN_NAME_NAME,
+            ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER
     };
 
     /**
      * List of Views which will be populated by Cursor data.
      */
     private static final int[] TO_FIELDS = new int[]{
-            R.id.list_artist_name
+            R.id.list_artist_name,
+            R.id.list_image_view
     };
 
     /**
@@ -73,6 +78,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     private boolean mTwoPane;
     Account mAccount;
     SimpleCursorAdapter mAdapter;
+    Context mContext;
     // The authority for the sync adapter's content provider
 
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
@@ -98,6 +104,8 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         });
 
         ListView listView = (ListView) findViewById(R.id.artist_list);
+        mContext = this;
+
         mAdapter = new SimpleCursorAdapter(
                 this,       // Current context
                 R.layout.artist_list_content,
@@ -109,10 +117,17 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int i) {
-                if (i == ArtistsContract.Artist.COLUMN_ID_NAME) {
+                if (i == COLUMN_NAME) {
+                    Log.i(TAG, "loading name");
                     ((TextView) view).setText(cursor.getString(i));
                     return true;
-                } else {
+                }
+                else if (i == COLUMN_SMALL_COVER) {
+                    Log.i(TAG, "loading cover");
+                    Picasso.with(mContext).load(cursor.getString(i)).into((ImageView) view);
+                    return true;
+                }
+                else {
                     // Let SimpleCursorAdapter handle other fields automatically
                     return false;
                 }

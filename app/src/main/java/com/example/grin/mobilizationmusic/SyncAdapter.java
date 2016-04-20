@@ -56,9 +56,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private class ArtistData {
         String name;
+        String small_cover;
 
-        public ArtistData(String in_name) {
+        public ArtistData(String in_name,
+                          String in_small_cover) {
             name = in_name;
+            small_cover = in_small_cover;
         }
     }
 
@@ -83,26 +86,41 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private ArrayList<ArtistData> readJSONFromStream(InputStream stream) throws IOException {
         JsonReader reader = new JsonReader(new InputStreamReader(stream));
         ArrayList<ArtistData> artists = new ArrayList<ArtistData>();
+        int n_entries = 0;
         try {
             reader.beginArray();
             while (reader.hasNext()) {
                 String name = null;
+                String small_cover = null;
+                String large_cover = null;
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String key = reader.nextName();
                     if (key.equals("name")) {
                         name = reader.nextString();
-                        artists.add(new ArtistData(name));
                         Log.i(TAG + ":name", name);
-                    } else {
+                    }
+                    else if (key.equals("cover")){
+                        reader.beginObject();
+                        reader.nextName();
+                        small_cover = reader.nextString();
+                        Log.i(TAG + ":small_cover", small_cover);
+                        reader.nextName();
+                        large_cover = reader.nextString();
+                        Log.i(TAG + ":large_cover", large_cover);
+                        reader.endObject();
+                    }
+                    else {
                         reader.skipValue();
                     }
                 }
+                artists.add(new ArtistData(name, small_cover));
                 reader.endObject();
             }
         }
         finally {
             reader.close();
+            Log.i(TAG + ":entries", Integer.toString(n_entries));
         }
         return artists;
     }
@@ -122,9 +140,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 // reading an ArrayList of ArtistData for the received json
                 ArrayList<ArtistData> artists = readJSONFromStream(stream);
                 ContentValues[] cvArray = new ContentValues[artists.size()];
+                Log.i(TAG, Integer.toString(artists.size()));
                 for (int i = 0; i < artists.size(); i++) {
                     cvArray[i] = new ContentValues();
                     cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_NAME, artists.get(i).name);
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER, artists.get(i).small_cover);
                 }
                 getContext().getContentResolver().bulkInsert(ArtistsContract.Artist.CONTENT_URI, cvArray);
             } finally {
