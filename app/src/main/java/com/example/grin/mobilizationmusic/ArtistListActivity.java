@@ -25,12 +25,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
 import com.example.grin.mobilizationmusic.authentication.Authenticator;
 import com.example.grin.mobilizationmusic.dummy.DummyContent;
 import com.example.grin.mobilizationmusic.provider.ArtistsContract;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -49,10 +51,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     // Column indexes. The index of a column in the Cursor is the same as its relative position in
     // the projection.
     /** Column index for _ID */
-    private static final int COLUMN_ID = 0;
-    /** Column index for name */
-    private static final int COLUMN_NAME = 1;
-    private static final int COLUMN_SMALL_COVER = 2;
+
 
 
     /**
@@ -77,8 +76,9 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
      */
     private boolean mTwoPane;
     Account mAccount;
-    SimpleCursorAdapter mAdapter;
+    ArtistListAdapter mAdapter;
     Context mContext;
+    ProgressBar mProgressBar;
     // The authority for the sync adapter's content provider
 
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
@@ -105,34 +105,10 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
 
         ListView listView = (ListView) findViewById(R.id.artist_list);
         mContext = this;
+        mProgressBar = (ProgressBar) findViewById(R.id.progressbar_loading);
 
-        mAdapter = new SimpleCursorAdapter(
-                this,       // Current context
-                R.layout.artist_list_content,
-                null,                // Cursor
-                FROM_COLUMNS,        // Cursor columns to use
-                TO_FIELDS,           // Layout fields to use
-                0                    // No flags
-        );
-        mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int i) {
-                if (i == COLUMN_NAME) {
-                    Log.i(TAG, "loading name");
-                    ((TextView) view).setText(cursor.getString(i));
-                    return true;
-                }
-                else if (i == COLUMN_SMALL_COVER) {
-                    Log.i(TAG, "loading cover");
-                    Picasso.with(mContext).load(cursor.getString(i)).into((ImageView) view);
-                    return true;
-                }
-                else {
-                    // Let SimpleCursorAdapter handle other fields automatically
-                    return false;
-                }
-            }
-        });
+        mAdapter = new ArtistListAdapter(this, null, 0);
+
         listView.setAdapter(mAdapter);
         getLoaderManager().initLoader(0, null, this);
 
@@ -163,7 +139,8 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
      */
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        mAdapter.changeCursor(cursor);
+        mProgressBar.setVisibility(View.GONE);
+        mAdapter.swapCursor(cursor);
     }
 
     /**
@@ -174,7 +151,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
      */
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        mAdapter.changeCursor(null);
+        mAdapter.swapCursor(null);
     }
 
     public static Account CreateSyncAccount(Context context) {
@@ -206,7 +183,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                     .putBoolean(PREF_SETUP_COMPLETE, true).commit();
         }
-        TriggerRefresh();
+        //TriggerRefresh();
         return account;
     }
 

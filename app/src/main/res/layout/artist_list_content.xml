@@ -24,6 +24,12 @@
     android:orientation="horizontal"
     android:id="@+id/artist_list_content">
 
+    <ProgressBar
+        android:id="@+id/list_image_progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true" />
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
