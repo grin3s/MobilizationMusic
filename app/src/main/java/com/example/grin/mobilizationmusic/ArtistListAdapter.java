@@ -24,6 +24,10 @@ public class ArtistListAdapter extends CursorAdapter {
     /** Column index for name */
     private static final int COLUMN_NAME = 1;
     private static final int COLUMN_SMALL_COVER = 2;
+    public static final int COLUMN_LARGE_COVER = 3;
+    public static final int COLUMN_TRACKS = 4;
+    public static final int COLUMN_ALBUMS = 5;
+    public static final int COLUMN_GENRES = 6;
 
     /**
      * Cache of the children views for a forecast list item.
@@ -32,12 +36,16 @@ public class ArtistListAdapter extends CursorAdapter {
         public final ImageView coverView;
         public final ProgressBar progressView;
         public final TextView nameView;
+        public final TextView genresView;
+        public final TextView albumsTracksView;
 
 
         public ViewHolder(View view) {
             coverView = (ImageView) view.findViewById(R.id.list_image_view);
             progressView = (ProgressBar) view.findViewById(R.id.list_image_progress_bar);
             nameView = (TextView) view.findViewById(R.id.list_artist_name);
+            genresView = (TextView) view.findViewById(R.id.list_artist_genres);
+            albumsTracksView = (TextView) view.findViewById(R.id.list_artist_albums_tracks);
         }
     }
 
@@ -74,6 +82,11 @@ public class ArtistListAdapter extends CursorAdapter {
             }
         });
         viewHolder.nameView.setText(cursor.getString(COLUMN_NAME));
+        viewHolder.genresView.setText(cursor.getString(COLUMN_GENRES));
+        viewHolder.albumsTracksView.setText(Integer.toString(cursor.getInt(COLUMN_ALBUMS)) +
+                " albums, " +
+                Integer.toString(cursor.getInt(COLUMN_TRACKS)) +
+                " tracks");
     }
 
     @Override

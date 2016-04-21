@@ -2,40 +2,27 @@ package com.example.grin.mobilizationmusic;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.view.LayoutInflater;
+
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 
 import com.example.grin.mobilizationmusic.authentication.Authenticator;
-import com.example.grin.mobilizationmusic.dummy.DummyContent;
 import com.example.grin.mobilizationmusic.provider.ArtistsContract;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
-
-import java.util.List;
 
 /**
  * An activity representing a list of Artists. This activity
@@ -78,7 +65,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     Account mAccount;
     ArtistListAdapter mAdapter;
     Context mContext;
-    ProgressBar mProgressBar;
+    ProgressDialog mProgressDialog;
     // The authority for the sync adapter's content provider
 
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
@@ -105,7 +92,6 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
 
         ListView listView = (ListView) findViewById(R.id.artist_list);
         mContext = this;
-        mProgressBar = (ProgressBar) findViewById(R.id.progressbar_loading);
 
         mAdapter = new ArtistListAdapter(this, null, 0);
 
@@ -119,6 +105,11 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+//        mProgressDialog = new ProgressDialog(this);
+//        mProgressDialog.setTitle("Loading...");
+//        mProgressDialog.setMessage("Please wait.");
+//        mProgressDialog.setCancelable(false);
+//        mProgressDialog.show();
     }
 
     @Override
@@ -139,7 +130,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
      */
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        mProgressBar.setVisibility(View.GONE);
+//        mProgressDialog.dismiss();
         mAdapter.swapCursor(cursor);
     }
 

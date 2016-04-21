@@ -57,11 +57,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private class ArtistData {
         String name;
         String small_cover;
+        String large_cover;
+        int tracks;
+        int albums;
+        String genres;
 
         public ArtistData(String in_name,
-                          String in_small_cover) {
+                          String in_small_cover,
+                          String in_large_cover,
+                          int in_tracks,
+                          int in_albums,
+                          String in_genres) {
             name = in_name;
             small_cover = in_small_cover;
+            large_cover = in_large_cover;
+            tracks = in_tracks;
+            albums = in_albums;
+            genres = in_genres;
         }
     }
 
@@ -93,6 +105,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 String name = null;
                 String small_cover = null;
                 String large_cover = null;
+                int tracks = 0;
+                int albums = 0;
+                String genres = null;
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String key = reader.nextName();
@@ -110,11 +125,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         Log.i(TAG + ":large_cover", large_cover);
                         reader.endObject();
                     }
+                    else if (key.equals("tracks")) {
+                        tracks = reader.nextInt();
+                    }
+                    else if (key.equals("albums")) {
+                        albums = reader.nextInt();
+                    }
+                    else if (key.equals("genres")) {
+                        reader.beginArray();
+                        while (reader.hasNext()) {
+                            String genre = reader.nextString();
+                            if (genres != null) {
+                                genres += ", ";
+                            }
+                            else {
+                                genres = "";
+                            }
+                            genres += genre;
+                        }
+                        reader.endArray();
+                    }
                     else {
                         reader.skipValue();
                     }
                 }
-                artists.add(new ArtistData(name, small_cover));
+                artists.add(new ArtistData(name, small_cover, large_cover, tracks, albums, genres));
                 reader.endObject();
             }
         }
@@ -145,6 +180,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     cvArray[i] = new ContentValues();
                     cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_NAME, artists.get(i).name);
                     cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER, artists.get(i).small_cover);
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_LARGE_COVER, artists.get(i).large_cover);
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_TRACKS, artists.get(i).tracks);
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_ALBUMS, artists.get(i).albums);
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_GENRES, artists.get(i).genres);
                 }
                 getContext().getContentResolver().bulkInsert(ArtistsContract.Artist.CONTENT_URI, cvArray);
             } finally {

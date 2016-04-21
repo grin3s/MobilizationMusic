@@ -23,6 +23,8 @@ public class ArtistsContract {
      * Path component for "entry"-type resources..
      */
     private static final String PATH_ARTISTS = "artists";
+    private static final String PATH_GENRES = "genres";
+    private static final String PATH_GENRES_TO_ARTISTS = "genres_to_artists";
 
     /**
      * Columns supported by "entries" records.
@@ -47,5 +49,35 @@ public class ArtistsContract {
          */
         public static final String COLUMN_NAME_NAME = "name";
         public static final String COLUMN_NAME_SMALL_COVER = "small_cover";
+        public static final String COLUMN_NAME_LARGE_COVER = "large_cover";
+        public static final String COLUMN_NAME_TRACKS = "tracks";
+        public static final String COLUMN_NAME_ALBUMS = "albums";
+        public static final String COLUMN_NAME_GENRES = "genres";
+
+    }
+
+    public static class Genre implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_GENRES).build();
+
+        public static final String TABLE_NAME = "genres";
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.com.example.mobilizationmusic.provider.genres";
+
+        public static final String COLUMN_NAME_NAME = "name";
+    }
+
+    public static class GenresToArtists implements BaseColumns {
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_GENRES_TO_ARTISTS).build();
+
+        public static final String TABLE_NAME = "genres_to_artists";
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.com.example.mobilizationmusic.provider.genres_to_artists";
+
+        public static final String COLUMN_NAME_GENRE_ID = "genre_id";
+        public static final String COLUMN_NAME_ARTIST_ID = "artist_id";
     }
 }
