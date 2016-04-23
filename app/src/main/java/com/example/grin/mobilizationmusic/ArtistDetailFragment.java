@@ -10,14 +10,19 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.grin.mobilizationmusic.dummy.DummyContent;
 import com.example.grin.mobilizationmusic.provider.ArtistsContract;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 /**
  * A fragment representing a single Artist detail screen.
@@ -30,6 +35,8 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     public static String DETAIL_URI = "URI";
     private Uri mUri;
     private TextView mNameView;
+    private ImageView mImageView;
+    private ProgressBar mProgressBar;
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -62,6 +69,8 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
             mUri = arguments.getParcelable(DETAIL_URI);
         }
         mNameView = (TextView) rootView.findViewById(R.id.detail_artist_name);
+        mImageView = (ImageView) rootView.findViewById(R.id.detail_image_view);
+        mProgressBar = (ProgressBar) rootView.findViewById(R.id.detail_image_progress_bar);
         return rootView;
     }
 
@@ -93,6 +102,18 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
             mNameView.setText(data.getString(ArtistListAdapter.COLUMN_NAME));
+            Picasso.with(getContext()).load(data.getString(ArtistListAdapter.COLUMN_LARGE_COVER)).into(mImageView, new Callback() {
+                @Override
+                public void onSuccess() {
+                    mProgressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onError() {
+                    Log.e(TAG, "Error loading the image");
+                }
+            });
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
         }
     }
 

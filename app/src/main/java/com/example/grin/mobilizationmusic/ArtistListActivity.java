@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
@@ -36,6 +37,8 @@ import com.example.grin.mobilizationmusic.provider.ArtistsContract;
  */
 public class ArtistListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
     public final static String TAG = "ArtistListActivity";
+    private static Parcelable mListViewState = null;
+    private static final String SELECTED_KEY = "selected_position";
 
     // Column indexes. The index of a column in the Cursor is the same as its relative position in
     // the projection.
@@ -76,6 +79,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate");
         setContentView(R.layout.activity_artist_list);
 
         if (findViewById(R.id.artist_detail_container) != null) {
@@ -124,13 +128,21 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         });
         getLoaderManager().initLoader(0, null, this);
 
-
-//        mProgressDialog = new ProgressDialog(this);
-//        mProgressDialog.setTitle("Loading...");
-//        mProgressDialog.setMessage("Please wait.");
-//        mProgressDialog.setCancelable(false);
-//        mProgressDialog.show();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getSupportActionBar().setTitle(getTitle());
+
+    }
+
+//    @Override
+//    public void onPause() {
+//        Log.d(TAG, "saving listview state @ onPause");
+//        mListViewState = mListView.onSaveInstanceState();
+//        super.onPause();
+//    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -150,8 +162,19 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
      */
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        Log.i(TAG, "onLoadFinished");
 //        mProgressDialog.dismiss();
         mAdapter.swapCursor(cursor);
+        if(mListViewState != null) {
+            Log.i(TAG, "trying to restore listview state..");
+            mListView.onRestoreInstanceState(mListViewState);
+        }
+//        if (mPosition != ListView.INVALID_POSITION) {
+//            Log.i(TAG, "changing position");
+//            // If we don't need to restart the loader, and there's a desired position to restore
+//            // to, do so now.
+//            mListView.smoothScrollToPosition(mPosition);
+//        }
     }
 
     /**
@@ -207,6 +230,19 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
                 new Account(Authenticator.ACCOUNT, Authenticator.ACCOUNT_TYPE),
                 ArtistsContract.CONTENT_AUTHORITY,
                 b);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // When tablets rotate, the currently selected list item needs to be saved.
+        // When no item is selected, mPosition will be set to Listview.INVALID_POSITION,
+        // so check for that before storing.
+        mListViewState = mListView.onSaveInstanceState();
+//        if (mPosition != ListView.INVALID_POSITION) {
+//            outState.putInt(SELECTED_KEY, mPosition);
+//            Log.i(TAG, "saving position position " + Integer.toString(mPosition));
+//        }
+        super.onSaveInstanceState(outState);
     }
 
 
