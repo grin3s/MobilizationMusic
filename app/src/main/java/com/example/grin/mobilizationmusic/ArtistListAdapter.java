@@ -20,10 +20,10 @@ import com.squareup.picasso.Picasso;
 public class ArtistListAdapter extends CursorAdapter {
     public static final String TAG = "ArtistListAdapter";
 
-    private static final int COLUMN_ID = 0;
+    public static final int COLUMN_ID = 0;
     /** Column index for name */
-    private static final int COLUMN_NAME = 1;
-    private static final int COLUMN_SMALL_COVER = 2;
+    public static final int COLUMN_NAME = 1;
+    public static final int COLUMN_SMALL_COVER = 2;
     public static final int COLUMN_LARGE_COVER = 3;
     public static final int COLUMN_TRACKS = 4;
     public static final int COLUMN_ALBUMS = 5;

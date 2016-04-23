@@ -5,6 +5,7 @@ import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -18,6 +19,7 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 
@@ -65,6 +67,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     Account mAccount;
     ArtistListAdapter mAdapter;
     Context mContext;
+    ListView mListView;
     ProgressDialog mProgressDialog;
     // The authority for the sync adapter's content provider
 
@@ -75,29 +78,6 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_list);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-
-        mAccount = CreateSyncAccount(this);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-        ListView listView = (ListView) findViewById(R.id.artist_list);
-        mContext = this;
-
-        mAdapter = new ArtistListAdapter(this, null, 0);
-
-        listView.setAdapter(mAdapter);
-        getLoaderManager().initLoader(0, null, this);
-
         if (findViewById(R.id.artist_detail_container) != null) {
             // The detail container view will be present only in the
             // large-screen layouts (res/values-w900dp).
@@ -105,6 +85,46 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle(getTitle());
+
+        mAccount = CreateSyncAccount(this);
+
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
+
+        mListView = (ListView) findViewById(R.id.artist_list);
+        mContext = this;
+
+        mAdapter = new ArtistListAdapter(this, null, 0);
+
+        mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                if (mTwoPane) {
+                    // In two-pane mode, show the detail view in this activity by
+                    // adding or replacing the detail fragment using a
+                    // fragment transaction.
+                } else {
+                    Intent intent = new Intent(mContext, ArtistDetailActivity.class)
+                            .setData(ArtistsContract.Artist.buildArtistById(cursor.getInt(ArtistListAdapter.COLUMN_ID)));
+                    startActivity(intent);
+                }
+            }
+        });
+        getLoaderManager().initLoader(0, null, this);
+
+
 //        mProgressDialog = new ProgressDialog(this);
 //        mProgressDialog.setTitle("Loading...");
 //        mProgressDialog.setMessage("Please wait.");

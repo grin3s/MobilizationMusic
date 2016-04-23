@@ -21,17 +21,27 @@ import android.util.Log;
 public class ArtistsProvider extends ContentProvider {
     public final static String TAG = "ArtistsProvider";
     ArtistsDatabase mDatabaseHelper;
+    private static final SQLiteQueryBuilder sQueryBuilder;
+
+    static {
+        sQueryBuilder = new SQLiteQueryBuilder();
+        sQueryBuilder.setTables(ArtistsContract.Artist.TABLE_NAME);
+    }
     /**
      * URI ID for route: /artists
      */
     public static final int ROUTE_ARTISTS = 1;
+    public static final int ROUTE_ARTIST_BY_ID = 2;
+
+    private static final String sArtistByIdSelection = ArtistsContract.Artist._ID + " = ? ";
 
     /**
      * UriMatcher, used to decode incoming URIs.
      */
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sUriMatcher.addURI(ArtistsContract.CONTENT_AUTHORITY, "artists", ROUTE_ARTISTS);
+        sUriMatcher.addURI(ArtistsContract.CONTENT_AUTHORITY, ArtistsContract.PATH_ARTISTS, ROUTE_ARTISTS);
+        sUriMatcher.addURI(ArtistsContract.CONTENT_AUTHORITY, ArtistsContract.PATH_ARTISTS + "/*", ROUTE_ARTIST_BY_ID);
     }
 
     /*
@@ -52,9 +62,37 @@ public class ArtistsProvider extends ContentProvider {
         switch (match) {
             case ROUTE_ARTISTS:
                 return ArtistsContract.Artist.CONTENT_TYPE;
+            case ROUTE_ARTIST_BY_ID:
+                return ArtistsContract.Artist.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+    }
+
+    private Cursor getAllArtists(String[] projection, String sortOrder) {
+        SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
+        return sQueryBuilder.query(
+                db,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    private Cursor getArtistById(int artist_id, String[] projection, String sortOrder) {
+        SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
+        return sQueryBuilder.query(
+                db,
+                projection,
+                sArtistByIdSelection,
+                new String[]{Integer.toString(artist_id)},
+                null,
+                null,
+                sortOrder
+        );
     }
 
     @Override
@@ -68,22 +106,20 @@ public class ArtistsProvider extends ContentProvider {
         Log.i(TAG, "performing query for " + uri.toString());
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
         int uriMatch = sUriMatcher.match(uri);
+        Context ctx = getContext();
+        assert ctx != null;
+        Cursor c;
         switch (uriMatch) {
             case ROUTE_ARTISTS:
-                // Return all known entries.
-                Cursor c = db.query(
-                        ArtistsContract.Artist.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
-                // Note: Notification URI must be manually set here for loaders to correctly
-                // register ContentObservers.
-                Context ctx = getContext();
-                assert ctx != null;
+                Log.i(TAG, "all artists");
+                // Return all known artists.
+                c = getAllArtists(projection, sortOrder);
+                c.setNotificationUri(ctx.getContentResolver(), uri);
+                return c;
+            case ROUTE_ARTIST_BY_ID:
+                int artist_id = Integer.valueOf(uri.getPathSegments().get(1));
+                Log.i(TAG, "artist by id " + Integer.toString(artist_id));
+                c = getArtistById(artist_id, projection, sortOrder);
                 c.setNotificationUri(ctx.getContentResolver(), uri);
                 return c;
             default:

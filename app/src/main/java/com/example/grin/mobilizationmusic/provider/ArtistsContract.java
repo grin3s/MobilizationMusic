@@ -22,7 +22,7 @@ public class ArtistsContract {
     /**
      * Path component for "entry"-type resources..
      */
-    private static final String PATH_ARTISTS = "artists";
+    public static final String PATH_ARTISTS = "artists";
     private static final String PATH_GENRES = "genres";
     private static final String PATH_GENRES_TO_ARTISTS = "genres_to_artists";
 
@@ -42,7 +42,9 @@ public class ArtistsContract {
         public static final String TABLE_NAME = "artists";
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.com.example.mobilizationmusic.provider.artists";
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTISTS;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTISTS;
 
         /**
          * Name of the artist
@@ -54,6 +56,9 @@ public class ArtistsContract {
         public static final String COLUMN_NAME_ALBUMS = "albums";
         public static final String COLUMN_NAME_GENRES = "genres";
 
+        public static Uri buildArtistById(int artist_id) {
+            return CONTENT_URI.buildUpon().appendPath(Integer.toString(artist_id)).build();
+        }
     }
 
     public static class Genre implements BaseColumns {
