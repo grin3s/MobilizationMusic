@@ -19,8 +19,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.grin.mobilizationmusic.dummy.DummyContent;
-import com.example.grin.mobilizationmusic.provider.ArtistsContract;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
