@@ -92,7 +92,6 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
 
         mAccount = CreateSyncAccount(this);
 
@@ -133,7 +132,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     @Override
     public void onResume() {
         super.onResume();
-        getSupportActionBar().setTitle(getTitle());
+        getSupportActionBar().setTitle("Artists");
 
     }
 
