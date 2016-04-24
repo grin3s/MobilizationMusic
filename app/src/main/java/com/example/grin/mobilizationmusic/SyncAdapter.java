@@ -54,6 +54,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      */
     private final ContentResolver mContentResolver;
 
+    // a class, where the artist's data is stored before passing it to the database
     private class ArtistData {
         String name;
         String small_cover;
@@ -98,6 +99,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mContentResolver = context.getContentResolver();
     }
 
+    // parsing JSON from the server
     private ArrayList<ArtistData> readJSONFromStream(InputStream stream) throws IOException {
         JsonReader reader = new JsonReader(new InputStreamReader(stream));
         ArrayList<ArtistData> artists = new ArrayList<ArtistData>();
@@ -181,6 +183,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 stream = downloadUrl(location);
                 // reading an ArrayList of ArtistData for the received json
                 ArrayList<ArtistData> artists = readJSONFromStream(stream);
+
+                // putting it to the db using content resolver
                 ContentValues[] cvArray = new ContentValues[artists.size()];
                 Log.i(TAG, Integer.toString(artists.size()));
                 for (int i = 0; i < artists.size(); i++) {
@@ -215,6 +219,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     /**
      * Given a string representation of a URL, sets up a connection and gets an input stream.
+     * Taken from one of the many examples from the docs
      */
     private InputStream downloadUrl(final URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

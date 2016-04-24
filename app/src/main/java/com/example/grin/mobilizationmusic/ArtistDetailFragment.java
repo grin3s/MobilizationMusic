@@ -31,20 +31,19 @@ import com.squareup.picasso.Picasso;
  * on handsets.
  */
 public class ArtistDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+    // tag for logging functions
     private static String TAG = "ArtistDetailFragment";
+    // the key to extract from arguments containing the uri to fetch from the content provider
     public static String DETAIL_URI = "URI";
+    // this uri
     private Uri mUri;
+
     private ImageView mImageView;
     private ProgressBar mProgressBar;
     private TextView mGenresView;
     private TextView mAlbumsTracksView;
     private TextView mBiographyView;
 
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
-    public static final String ARG_ITEM_ID = "item_id";
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -57,8 +56,6 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-        }
     }
 
     @Override
@@ -67,10 +64,13 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
         Log.i(TAG, "creating detail fragment");
         View rootView = inflater.inflate(R.layout.artist_detail, container, false);
 
+        // fetching content uri from the arguments
         Bundle arguments = getArguments();
         if (arguments != null) {
             mUri = arguments.getParcelable(DETAIL_URI);
         }
+
+        // getting all views
         mImageView = (ImageView) rootView.findViewById(R.id.detail_image_view);
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.detail_image_progress_bar);
         mGenresView = (TextView) rootView.findViewById(R.id.detail_artist_genres);
@@ -81,6 +81,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        // initializing the loader, that fetches mUri
         getLoaderManager().initLoader(0, null, this);
         super.onActivityCreated(savedInstanceState);
     }
@@ -106,9 +107,12 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
-            Picasso.with(getContext()).load(data.getString(ArtistListAdapter.COLUMN_LARGE_COVER)).into(mImageView, new Callback() {
+            // loading the big image, we resize it, because the big one looks ugly on small screens
+            // TODO: do something with the image size...
+            Picasso.with(getContext()).load(data.getString(ArtistListAdapter.COLUMN_LARGE_COVER)).resize(600, 600).into(mImageView, new Callback() {
                 @Override
                 public void onSuccess() {
+                    // when the image is loaded, we can hide the circle progress bar
                     mProgressBar.setVisibility(View.GONE);
                 }
 
@@ -117,6 +121,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
                     Log.e(TAG, "Error loading the image");
                 }
             });
+            // populating other views
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
             mGenresView.setText(data.getString(ArtistListAdapter.COLUMN_GENRES));
             mAlbumsTracksView.setText(String.format(ArtistListAdapter.sAlbumsTracksTemplate, data.getInt(ArtistListAdapter.COLUMN_ALBUMS), ArtistListAdapter.COLUMN_TRACKS));

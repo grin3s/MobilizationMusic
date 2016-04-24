@@ -21,8 +21,8 @@ import com.squareup.picasso.Picasso;
 public class ArtistListAdapter extends CursorAdapter {
     public static final String TAG = "ArtistListAdapter";
 
+    // column indexes used by the Cursor
     public static final int COLUMN_ID = 0;
-    /** Column index for name */
     public static final int COLUMN_NAME = 1;
     public static final int COLUMN_SMALL_COVER = 2;
     public static final int COLUMN_LARGE_COVER = 3;
@@ -31,11 +31,10 @@ public class ArtistListAdapter extends CursorAdapter {
     public static final int COLUMN_GENRES = 6;
     public static final int COLUMN_DESCRIPTION = 7;
 
+    // the string template to write number of albums and tracks
     public static String sAlbumsTracksTemplate;
 
-    /**
-     * Cache of the children views for a forecast list item.
-     */
+    // viewholder to cache the views
     public static class ViewHolder {
         public final ImageView coverView;
         public final ProgressBar progressView;
@@ -73,11 +72,13 @@ public class ArtistListAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
 
         final ViewHolder viewHolder = (ViewHolder) view.getTag();
+        // making the progress bar visible every time the data is starting to load
         viewHolder.progressView.setVisibility(View.VISIBLE);
 
-        Picasso.with(context).load(cursor.getString(COLUMN_SMALL_COVER)).into(viewHolder.coverView, new Callback() {
+        Picasso.with(context).load(cursor.getString(COLUMN_SMALL_COVER)).resize(200, 200).into(viewHolder.coverView, new Callback() {
             @Override
             public void onSuccess() {
+                // the image is loaded, we can hide the progress bar circle
                 viewHolder.progressView.setVisibility(View.GONE);
             }
 

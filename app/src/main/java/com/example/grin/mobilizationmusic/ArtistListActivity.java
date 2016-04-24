@@ -2,7 +2,7 @@ package com.example.grin.mobilizationmusic;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.ProgressDialog;
+
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,17 +17,14 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import android.view.View;
-import android.view.Window;
+
 import android.widget.AdapterView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+
 
 
 import com.example.grin.mobilizationmusic.authentication.Authenticator;
@@ -47,28 +44,6 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private Object mSyncObserverHandle;
 
-    // Column indexes. The index of a column in the Cursor is the same as its relative position in
-    // the projection.
-    /** Column index for _ID */
-
-
-
-    /**
-     * List of Cursor columns to read from when preparing an adapter to populate the ListView.
-     */
-    private static final String[] FROM_COLUMNS = new String[]{
-            ArtistsContract.Artist.COLUMN_NAME_NAME,
-            ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER
-    };
-
-    /**
-     * List of Views which will be populated by Cursor data.
-     */
-    private static final int[] TO_FIELDS = new int[]{
-            R.id.list_artist_name,
-            R.id.list_image_view
-    };
-
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -79,8 +54,8 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     Context mContext;
     ListView mListView;
     ProgressBar mLoadingBar;
-    // The authority for the sync adapter's content provider
 
+    //key in SharedPreferences, that knows if we have synced with the server
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
 
     @Override
@@ -98,25 +73,23 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             mTwoPane = true;
         }
 
+        //adding the toolbar to the activity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //circle progress bar that rotates while sync adapter is fetching data
         mLoadingBar = (ProgressBar) findViewById(R.id.loading_bar);
 
+        //creating an account that is needed for sync adapter
         mAccount = CreateSyncAccount(this);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
+        //list view holding all artists
         mListView = (ListView) findViewById(R.id.artist_list);
+
+        //context variable for later usage
         mContext = this;
 
+        //creating the adapter for the list of artists
         mAdapter = new ArtistListAdapter(this, null, 0);
 
         mListView.setAdapter(mAdapter);
@@ -124,6 +97,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                // building URI which can be used to fetch the current artist's info, which is then passed to the detail fragment
                 Uri contentUri = ArtistsContract.Artist.buildArtistById(cursor.getInt(ArtistListAdapter.COLUMN_ID));
                 if (mTwoPane) {
                     // In two-pane mode, show the detail view in this activity by
@@ -139,12 +113,14 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
                             .replace(R.id.artist_detail_container, fragment, DETAILFRAGMENT_TAG)
                             .commit();
                 } else {
+                    // in a small screen we start a new activity with an Intent
                     Intent intent = new Intent(mContext, ArtistDetailActivity.class)
                             .setData(contentUri);
                     startActivity(intent);
                 }
             }
         });
+        // initializing the loader that fetches artists' info from the content provider in another thread
         getLoaderManager().initLoader(0, null, this);
 
     }
@@ -152,7 +128,10 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     @Override
     public void onResume() {
         super.onResume();
+        // setting the title of an action bar
         getSupportActionBar().setTitle("Artists");
+
+        // creating an observer that looks at the status of the sync adapter. We use it to hide mLoadingBar later
         mSyncStatusObserver.onStatusChanged(0);
 
         // Watch for sync state changes
@@ -164,68 +143,51 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     @Override
     public void onPause() {
         super.onPause();
+
+        // have to do this
         if (mSyncObserverHandle != null) {
             ContentResolver.removeStatusChangeListener(mSyncObserverHandle);
             mSyncObserverHandle = null;
         }
     }
 
-//    @Override
-//    public void onPause() {
-//        Log.d(TAG, "saving listview state @ onPause");
-//        mListViewState = mListView.onSaveInstanceState();
-//        super.onPause();
-//    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        // We only have one loader, so we can ignore the value of i.
-        // (It'll be '0', as set in onCreate().)
+        // fetching artists' data using cursor loader
+        // even if there is no network connection, we still have all data cached in the database
+        // images themselves are cached by Picasso (if you loaded them)
         return new CursorLoader(this,  // Context
-                ArtistsContract.Artist.CONTENT_URI, // URI
-                null,                // Projection
-                null,                           // Selection
-                null,                           // Selection args
-                null); // Sort
+                ArtistsContract.Artist.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
     }
 
-    /**
-     * Move the Cursor returned by the query into the ListView adapter. This refreshes the existing
-     * UI with the data in the Cursor.
-     */
+
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         Log.i(TAG, "onLoadFinished");
-//        mProgressDialog.dismiss();
+        // giving the newly creating cursor to the adapter
         mAdapter.swapCursor(cursor);
+        // if we have the previous state for mListView, restore it. This is convenient for the users' experience
+        // when he/she returns from the detail fragment
         if(mListViewState != null) {
             Log.i(TAG, "trying to restore listview state..");
             mListView.onRestoreInstanceState(mListViewState);
         }
-
-        //mLoadingTextView.setVisibility(View.GONE);
-//        if (mPosition != ListView.INVALID_POSITION) {
-//            Log.i(TAG, "changing position");
-//            // If we don't need to restart the loader, and there's a desired position to restore
-//            // to, do so now.
-//            mListView.smoothScrollToPosition(mPosition);
-//        }
     }
 
-    /**
-     * Called when the ContentObserver defined for the content provider detects that data has
-     * changed. The ContentObserver resets the loader, and then re-runs the loader. In the adapter,
-     * set the Cursor value to null. This removes the reference to the Cursor, allowing it to be
-     * garbage-collected.
-     */
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mAdapter.swapCursor(null);
     }
 
+    // this function creates a system account which is needed to use sync adapter
     public static Account CreateSyncAccount(Context context) {
         Log.i(TAG, "CreateSyncAccount");
         boolean newAccount = false;
+        // have we already synced the data? Store the answer in SharedPreferences
         boolean setupComplete = PreferenceManager
                 .getDefaultSharedPreferences(context).getBoolean(PREF_SETUP_COMPLETE, false);
 
@@ -236,20 +198,17 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         if (accountManager.addAccountExplicitly(account, null, null)) {
             // Inform the system that this account supports sync
             ContentResolver.setIsSyncable(account, ArtistsContract.CONTENT_AUTHORITY, 1);
-            // Inform the system that this account is eligible for auto sync when the network is up
-            //ContentResolver.setSyncAutomatically(account, ArtistsContract.CONTENT_AUTHORITY, true);
-            // Recommend a schedule for automatic synchronization. The system may modify this based
-            // on other scheduled syncs and network utilization.
-//            ContentResolver.addPeriodicSync(
-//                    account, AUTHORITY, new Bundle(), SYNC_FREQUENCY);
+
             newAccount = true;
         }
 
-        // Schedule an initial sync if we detect problems with either our account or our local
-        // data has been deleted. (Note that it's possible to clear app data WITHOUT affecting
-        // the account list, so wee need to check both.)
+        /*
+        Right now sync adapter fetches the data only once, when the app is first started, or we cleared its data
+        One can easily set up scheduled updates here
+         */
         if (newAccount || !setupComplete) {
             Log.i(TAG, "refreshing data");
+            // force refreshing
             TriggerRefresh();
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                     .putBoolean(PREF_SETUP_COMPLETE, true).commit();
@@ -270,41 +229,26 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        // When tablets rotate, the currently selected list item needs to be saved.
-        // When no item is selected, mPosition will be set to Listview.INVALID_POSITION,
-        // so check for that before storing.
+        // save the current state of mListView
         mListViewState = mListView.onSaveInstanceState();
-//        if (mPosition != ListView.INVALID_POSITION) {
-//            outState.putInt(SELECTED_KEY, mPosition);
-//            Log.i(TAG, "saving position position " + Integer.toString(mPosition));
-//        }
         super.onSaveInstanceState(outState);
     }
 
     private SyncStatusObserver mSyncStatusObserver = new SyncStatusObserver() {
-        /** Callback invoked with the sync adapter status changes. */
+        // Callback invoked with the sync adapter status changes.
         @Override
         public void onStatusChanged(int which) {
             runOnUiThread(new Runnable() {
-                /**
-                 * The SyncAdapter runs on a background thread. To update the UI, onStatusChanged()
-                 * runs on the UI thread.
-                 */
                 @Override
                 public void run() {
-                    // Create a handle to the account that was created by
-                    // SyncService.CreateSyncAccount(). This will be used to query the system to
-                    // see how the sync status has changed.
                     Account account = new Account(Authenticator.ACCOUNT, Authenticator.ACCOUNT_TYPE);
                     if (account == null) {
-                        // GetAccount() returned an invalid value. This shouldn't happen, but
-                        // we'll set the status to "not refreshing".
                         Log.e(TAG, "Account error");
                         return;
                     }
 
                     // Test the ContentResolver to see if the sync adapter is active or pending.
-                    // Set the state of the refresh button accordingly.
+                    // set the state of mLoadingBar accordingly
                     boolean syncActive = ContentResolver.isSyncActive(
                             account, ArtistsContract.CONTENT_AUTHORITY);
                     boolean syncPending = ContentResolver.isSyncPending(

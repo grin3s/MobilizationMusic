@@ -14,48 +14,42 @@ import android.util.Log;
 /**
  * Created by grin on 4/19/16.
  */
-/*
- * Define an implementation of ContentProvider that stubs out
- * all methods
- */
+
+// Content Provider class, that provides data about artists
 public class ArtistsProvider extends ContentProvider {
     public final static String TAG = "ArtistsProvider";
+
+    // the object to access sqlite db
     ArtistsDatabase mDatabaseHelper;
+
+    // object to build queries easier
     private static final SQLiteQueryBuilder sQueryBuilder;
 
     static {
         sQueryBuilder = new SQLiteQueryBuilder();
         sQueryBuilder.setTables(ArtistsContract.Artist.TABLE_NAME);
     }
-    /**
-     * URI ID for route: /artists
-     */
+
+    // route ids that are matched with URIs
     public static final int ROUTE_ARTISTS = 1;
     public static final int ROUTE_ARTIST_BY_ID = 2;
 
+    // selection part of the query to fetch one artist by his id
     private static final String sArtistByIdSelection = ArtistsContract.Artist._ID + " = ? ";
 
-    /**
-     * UriMatcher, used to decode incoming URIs.
-     */
+    // uri matcher
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
         sUriMatcher.addURI(ArtistsContract.CONTENT_AUTHORITY, ArtistsContract.PATH_ARTISTS, ROUTE_ARTISTS);
         sUriMatcher.addURI(ArtistsContract.CONTENT_AUTHORITY, ArtistsContract.PATH_ARTISTS + "/*", ROUTE_ARTIST_BY_ID);
     }
 
-    /*
-     * Always return true, indicating that the
-     * provider loaded correctly.
-     */
     @Override
     public boolean onCreate() {
         mDatabaseHelper = new ArtistsDatabase(getContext());
         return true;
     }
-    /*
-     * Return no type for MIME type
-     */
+
     @Override
     public String getType(Uri uri) {
         final int match = sUriMatcher.match(uri);
@@ -69,6 +63,7 @@ public class ArtistsProvider extends ContentProvider {
         }
     }
 
+    // costructs the query that returns all artists
     private Cursor getAllArtists(String[] projection, String sortOrder) {
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
         return sQueryBuilder.query(
@@ -82,6 +77,7 @@ public class ArtistsProvider extends ContentProvider {
         );
     }
 
+    // costructs the query that returns one artist by his id. It is used to populate detail fragment.
     private Cursor getArtistById(int artist_id, String[] projection, String sortOrder) {
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
         return sQueryBuilder.query(
@@ -107,6 +103,7 @@ public class ArtistsProvider extends ContentProvider {
         SQLiteDatabase db = mDatabaseHelper.getReadableDatabase();
         int uriMatch = sUriMatcher.match(uri);
         Context ctx = getContext();
+        // do assertion to avoid some warnings...
         assert ctx != null;
         Cursor c;
         switch (uriMatch) {
@@ -117,6 +114,8 @@ public class ArtistsProvider extends ContentProvider {
                 c.setNotificationUri(ctx.getContentResolver(), uri);
                 return c;
             case ROUTE_ARTIST_BY_ID:
+                // get one artist
+                // extract his id from the uri
                 int artist_id = Integer.valueOf(uri.getPathSegments().get(1));
                 Log.i(TAG, "artist by id " + Integer.toString(artist_id));
                 c = getArtistById(artist_id, projection, sortOrder);
@@ -126,23 +125,17 @@ public class ArtistsProvider extends ContentProvider {
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
     }
-    /*
-     * insert() always returns null (no URI)
-     */
+
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         return null;
     }
-    /*
-     * delete() always returns "no rows affected" (0)
-     */
+
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         return 0;
     }
-    /*
-     * update() always returns "no rows affected" (0)
-     */
+
     public int update(
             Uri uri,
             ContentValues values,
@@ -151,6 +144,7 @@ public class ArtistsProvider extends ContentProvider {
         return 0;
     }
 
+    // we use this method to insert all artists when they are fetched from the network in one transaction
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values) {
         Log.i(TAG, "performing bulk insert");
@@ -162,6 +156,7 @@ public class ArtistsProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
+                        // if we already have the artist with the same name, we ovewrite this entry
                         long _id = db.insertWithOnConflict(ArtistsContract.Artist.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
                         if (_id != -1) {
                             returnCount++;
@@ -200,28 +195,9 @@ public class ArtistsProvider extends ContentProvider {
                         ArtistsContract.Artist.COLUMN_NAME_GENRES + TYPE_TEXT + COMMA_SEP +
                         ArtistsContract.Artist.COLUMN_NAME_DESCRITION + TYPE_TEXT + ")";
 
-        private static final String SQL_CREATE_GENRES =
-                "CREATE TABLE" + ArtistsContract.Genre.TABLE_NAME + " (" +
-                        ArtistsContract.Genre._ID + " INTEGER PRIMARY KEY," +
-                        ArtistsContract.Genre.COLUMN_NAME_NAME + UNIQUE_KEY + TYPE_TEXT + ")";
-
-        private static final String SQL_CREATE_GENRES_TO_ARTISTS =
-                "CREATE TABLE" + ArtistsContract.GenresToArtists.TABLE_NAME + " (" +
-                        ArtistsContract.GenresToArtists._ID + " INTEGER PRIMARY KEY," +
-                        ArtistsContract.GenresToArtists.COLUMN_NAME_GENRE_ID + TYPE_INTEGER + COMMA_SEP +
-                        ArtistsContract.GenresToArtists.COLUMN_NAME_ARTIST_ID + TYPE_INTEGER + COMMA_SEP +
-                        "UNIQUE (" + ArtistsContract.GenresToArtists.COLUMN_NAME_GENRE_ID + "," + ArtistsContract.GenresToArtists.COLUMN_NAME_ARTIST_ID + ")" + ")";
-
-
         /** SQL statement to drop "entry" table. */
         private static final String SQL_DELETE_ARTISTS =
                 "DROP TABLE IF EXISTS " + ArtistsContract.Artist.TABLE_NAME;
-
-        private static final String SQL_DELETE_GENRES =
-                "DROP TABLE IF EXISTS " + ArtistsContract.Genre.TABLE_NAME;
-
-        private static final String SQL_DELETE_GENRES_TO_ARTISTS =
-                "DROP TABLE IF EXISTS " + ArtistsContract.GenresToArtists.TABLE_NAME;
 
         public ArtistsDatabase(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -230,8 +206,6 @@ public class ArtistsProvider extends ContentProvider {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SQL_CREATE_ARTISTS);
-//            db.execSQL(SQL_CREATE_GENRES);
-//            db.execSQL(SQL_CREATE_GENRES_TO_ARTISTS);
         }
 
         @Override
@@ -239,8 +213,6 @@ public class ArtistsProvider extends ContentProvider {
             // This database is only a cache for online data, so its upgrade policy is
             // to simply to discard the data and start over
             db.execSQL(SQL_DELETE_ARTISTS);
-//            db.execSQL(SQL_DELETE_GENRES);
-//            db.execSQL(SQL_DELETE_GENRES_TO_ARTISTS);
             onCreate(db);
         }
     }
