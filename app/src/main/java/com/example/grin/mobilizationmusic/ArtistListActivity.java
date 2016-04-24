@@ -7,6 +7,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
@@ -38,7 +39,7 @@ import com.example.grin.mobilizationmusic.provider.ArtistsContract;
 public class ArtistListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
     public final static String TAG = "ArtistListActivity";
     private static Parcelable mListViewState = null;
-    private static final String SELECTED_KEY = "selected_position";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     // Column indexes. The index of a column in the Cursor is the same as its relative position in
     // the projection.
@@ -114,13 +115,23 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                Uri contentUri = ArtistsContract.Artist.buildArtistById(cursor.getInt(ArtistListAdapter.COLUMN_ID));
                 if (mTwoPane) {
                     // In two-pane mode, show the detail view in this activity by
                     // adding or replacing the detail fragment using a
                     // fragment transaction.
+                    Bundle args = new Bundle();
+                    args.putParcelable(ArtistDetailFragment.DETAIL_URI, contentUri);
+
+                    ArtistDetailFragment fragment = new ArtistDetailFragment();
+                    fragment.setArguments(args);
+
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.artist_detail_container, fragment, DETAILFRAGMENT_TAG)
+                            .commit();
                 } else {
                     Intent intent = new Intent(mContext, ArtistDetailActivity.class)
-                            .setData(ArtistsContract.Artist.buildArtistById(cursor.getInt(ArtistListAdapter.COLUMN_ID)));
+                            .setData(contentUri);
                     startActivity(intent);
                 }
             }
