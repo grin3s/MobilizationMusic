@@ -7,6 +7,8 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:orientation="vertical">
 
         <ProgressBar
@@ -23,7 +25,32 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id = "@+id/detail_artist_name"/>
+            android:id = "@+id/detail_artist_genres"
+            android:textColor="@color/textGray"
+            android:layout_marginTop="5sp"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id = "@+id/detail_artist_albumns_tracks"
+            android:textColor="@color/textGray"
+            android:layout_marginTop="5sp"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5sp"
+            android:textSize="20sp"
+            android:text="Biography"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id = "@+id/detail_artist_biography"
+            android:layout_marginTop="7sp"
+            android:textSize="17sp" />
 
     </LinearLayout>
 </ScrollView>

@@ -34,9 +34,12 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     private static String TAG = "ArtistDetailFragment";
     public static String DETAIL_URI = "URI";
     private Uri mUri;
-    private TextView mNameView;
     private ImageView mImageView;
     private ProgressBar mProgressBar;
+    private TextView mGenresView;
+    private TextView mAlbumsTracksView;
+    private TextView mBiographyView;
+
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -68,9 +71,11 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
         if (arguments != null) {
             mUri = arguments.getParcelable(DETAIL_URI);
         }
-        mNameView = (TextView) rootView.findViewById(R.id.detail_artist_name);
         mImageView = (ImageView) rootView.findViewById(R.id.detail_image_view);
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.detail_image_progress_bar);
+        mGenresView = (TextView) rootView.findViewById(R.id.detail_artist_genres);
+        mAlbumsTracksView = (TextView) rootView.findViewById(R.id.detail_artist_albumns_tracks);
+        mBiographyView = (TextView) rootView.findViewById(R.id.detail_artist_biography);
         return rootView;
     }
 
@@ -101,7 +106,6 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null && data.moveToFirst()) {
-            mNameView.setText(data.getString(ArtistListAdapter.COLUMN_NAME));
             Picasso.with(getContext()).load(data.getString(ArtistListAdapter.COLUMN_LARGE_COVER)).into(mImageView, new Callback() {
                 @Override
                 public void onSuccess() {
@@ -114,6 +118,9 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
                 }
             });
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
+            mGenresView.setText(data.getString(ArtistListAdapter.COLUMN_GENRES));
+            mAlbumsTracksView.setText(String.format(ArtistListAdapter.sAlbumsTracksTemplate, data.getInt(ArtistListAdapter.COLUMN_ALBUMS), ArtistListAdapter.COLUMN_TRACKS));
+            mBiographyView.setText(data.getString(ArtistListAdapter.COLUMN_DESCRIPTION));
         }
     }
 

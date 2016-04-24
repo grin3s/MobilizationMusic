@@ -37,21 +37,28 @@
         android:id="@+id/list_image_view"/>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/list_artist_name"/>
+            android:id="@+id/list_artist_name"
+            android:gravity="center"
+            android:textSize="20sp"/>
         <TextView
+            android:textColor="@color/textGray"
+            android:layout_marginTop="5sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5sp"
             android:id="@+id/list_artist_genres"/>
         <TextView
+            android:textColor="@color/textGray"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5sp"
             android:id="@+id/list_artist_albums_tracks"/>
     </LinearLayout>
 </LinearLayout>

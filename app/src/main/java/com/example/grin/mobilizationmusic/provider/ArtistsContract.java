@@ -55,6 +55,7 @@ public class ArtistsContract {
         public static final String COLUMN_NAME_TRACKS = "tracks";
         public static final String COLUMN_NAME_ALBUMS = "albums";
         public static final String COLUMN_NAME_GENRES = "genres";
+        public static final String COLUMN_NAME_DESCRITION = "description";
 
         public static Uri buildArtistById(int artist_id) {
             return CONTENT_URI.buildUpon().appendPath(Integer.toString(artist_id)).build();

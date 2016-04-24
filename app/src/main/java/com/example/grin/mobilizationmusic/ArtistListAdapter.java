@@ -1,6 +1,7 @@
 package com.example.grin.mobilizationmusic;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +29,9 @@ public class ArtistListAdapter extends CursorAdapter {
     public static final int COLUMN_TRACKS = 4;
     public static final int COLUMN_ALBUMS = 5;
     public static final int COLUMN_GENRES = 6;
+    public static final int COLUMN_DESCRIPTION = 7;
+
+    public static String sAlbumsTracksTemplate;
 
     /**
      * Cache of the children views for a forecast list item.
@@ -51,6 +55,7 @@ public class ArtistListAdapter extends CursorAdapter {
 
     public ArtistListAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
+        sAlbumsTracksTemplate = context.getResources().getString(R.string.albums_and_tracks_template);
     }
 
     @Override
@@ -83,10 +88,7 @@ public class ArtistListAdapter extends CursorAdapter {
         });
         viewHolder.nameView.setText(cursor.getString(COLUMN_NAME));
         viewHolder.genresView.setText(cursor.getString(COLUMN_GENRES));
-        viewHolder.albumsTracksView.setText(Integer.toString(cursor.getInt(COLUMN_ALBUMS)) +
-                " albums, " +
-                Integer.toString(cursor.getInt(COLUMN_TRACKS)) +
-                " tracks");
+        viewHolder.albumsTracksView.setText(String.format(sAlbumsTracksTemplate, cursor.getInt(COLUMN_ALBUMS), cursor.getInt(COLUMN_TRACKS)));
     }
 
     @Override

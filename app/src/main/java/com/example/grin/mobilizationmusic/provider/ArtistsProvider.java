@@ -197,7 +197,8 @@ public class ArtistsProvider extends ContentProvider {
                         ArtistsContract.Artist.COLUMN_NAME_LARGE_COVER + TYPE_TEXT + COMMA_SEP +
                         ArtistsContract.Artist.COLUMN_NAME_TRACKS + TYPE_INTEGER + COMMA_SEP +
                         ArtistsContract.Artist.COLUMN_NAME_ALBUMS + TYPE_INTEGER + COMMA_SEP +
-                        ArtistsContract.Artist.COLUMN_NAME_GENRES + TYPE_TEXT + ")";
+                        ArtistsContract.Artist.COLUMN_NAME_GENRES + TYPE_TEXT + COMMA_SEP +
+                        ArtistsContract.Artist.COLUMN_NAME_DESCRITION + TYPE_TEXT + ")";
 
         private static final String SQL_CREATE_GENRES =
                 "CREATE TABLE" + ArtistsContract.Genre.TABLE_NAME + " (" +

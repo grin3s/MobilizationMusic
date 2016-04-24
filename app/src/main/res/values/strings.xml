@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MobilizationMusic</string>
     <string name="title_artist_detail">Artist Detail</string>
+    <string name="albums_and_tracks_template">%1$d albums, %2$d tracks</string>
 </resources>

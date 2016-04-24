@@ -61,19 +61,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         int tracks;
         int albums;
         String genres;
+        String description;
 
         public ArtistData(String in_name,
                           String in_small_cover,
                           String in_large_cover,
                           int in_tracks,
                           int in_albums,
-                          String in_genres) {
+                          String in_genres,
+                          String in_description) {
             name = in_name;
             small_cover = in_small_cover;
             large_cover = in_large_cover;
             tracks = in_tracks;
             albums = in_albums;
             genres = in_genres;
+            description = in_description;
         }
     }
 
@@ -108,6 +111,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 int tracks = 0;
                 int albums = 0;
                 String genres = null;
+                String description = null;
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String key = reader.nextName();
@@ -145,11 +149,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                         reader.endArray();
                     }
+                    else if (key.equals("description")) {
+                        description = reader.nextString();
+                    }
                     else {
                         reader.skipValue();
                     }
                 }
-                artists.add(new ArtistData(name, small_cover, large_cover, tracks, albums, genres));
+                artists.add(new ArtistData(name, small_cover, large_cover, tracks, albums, genres, description));
                 reader.endObject();
             }
         }
@@ -184,6 +191,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_TRACKS, artists.get(i).tracks);
                     cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_ALBUMS, artists.get(i).albums);
                     cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_GENRES, artists.get(i).genres);
+                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_DESCRITION, artists.get(i).description);
                 }
                 getContext().getContentResolver().bulkInsert(ArtistsContract.Artist.CONTENT_URI, cvArray);
             } finally {
@@ -194,7 +202,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }
         } catch (MalformedURLException e) {
-            Log.e(TAG, "Feed URL is malformed", e);
+            Log.e(TAG, "URL is malformed", e);
             syncResult.stats.numParseExceptions++;
             return;
         } catch (IOException e) {
