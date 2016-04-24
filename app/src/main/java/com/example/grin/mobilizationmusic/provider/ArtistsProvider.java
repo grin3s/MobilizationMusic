@@ -162,7 +162,7 @@ public class ArtistsProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
-                        long _id = db.insert(ArtistsContract.Artist.TABLE_NAME, null, value);
+                        long _id = db.insertWithOnConflict(ArtistsContract.Artist.TABLE_NAME, null, value, SQLiteDatabase.CONFLICT_REPLACE);
                         if (_id != -1) {
                             returnCount++;
                         }
@@ -192,7 +192,7 @@ public class ArtistsProvider extends ContentProvider {
         private static final String SQL_CREATE_ARTISTS =
                 "CREATE TABLE " + ArtistsContract.Artist.TABLE_NAME + " (" +
                         ArtistsContract.Artist._ID + " INTEGER PRIMARY KEY," +
-                        ArtistsContract.Artist.COLUMN_NAME_NAME + TYPE_TEXT + COMMA_SEP +
+                        ArtistsContract.Artist.COLUMN_NAME_NAME + TYPE_TEXT + UNIQUE_KEY + COMMA_SEP +
                         ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER + TYPE_TEXT + COMMA_SEP +
                         ArtistsContract.Artist.COLUMN_NAME_LARGE_COVER + TYPE_TEXT + COMMA_SEP +
                         ArtistsContract.Artist.COLUMN_NAME_TRACKS + TYPE_INTEGER + COMMA_SEP +
