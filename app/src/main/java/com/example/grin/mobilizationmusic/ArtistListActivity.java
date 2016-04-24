@@ -188,7 +188,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     }
 
     public static Account CreateSyncAccount(Context context) {
-        Log.i(TAG, "CreateSyncAccoun");
+        Log.i(TAG, "CreateSyncAccount");
         boolean newAccount = false;
         boolean setupComplete = PreferenceManager
                 .getDefaultSharedPreferences(context).getBoolean(PREF_SETUP_COMPLETE, false);
@@ -213,10 +213,11 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         // data has been deleted. (Note that it's possible to clear app data WITHOUT affecting
         // the account list, so wee need to check both.)
         if (newAccount || !setupComplete) {
+            Log.i(TAG, "refreshing data");
+            TriggerRefresh();
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                     .putBoolean(PREF_SETUP_COMPLETE, true).commit();
         }
-        //TriggerRefresh();
         return account;
     }
 
