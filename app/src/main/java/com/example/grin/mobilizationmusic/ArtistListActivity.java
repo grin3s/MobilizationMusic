@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SyncStatusObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,8 +22,12 @@ import android.support.design.widget.Snackbar;
 import android.util.Log;
 
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 
 import com.example.grin.mobilizationmusic.authentication.Authenticator;
@@ -40,6 +45,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     public final static String TAG = "ArtistListActivity";
     private static Parcelable mListViewState = null;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private Object mSyncObserverHandle;
 
     // Column indexes. The index of a column in the Cursor is the same as its relative position in
     // the projection.
@@ -72,7 +78,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     ArtistListAdapter mAdapter;
     Context mContext;
     ListView mListView;
-    ProgressDialog mProgressDialog;
+    ProgressBar mLoadingBar;
     // The authority for the sync adapter's content provider
 
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
@@ -81,6 +87,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate");
+
         setContentView(R.layout.activity_artist_list);
 
         if (findViewById(R.id.artist_detail_container) != null) {
@@ -93,6 +100,8 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mLoadingBar = (ProgressBar) findViewById(R.id.loading_bar);
 
         mAccount = CreateSyncAccount(this);
 
@@ -144,7 +153,21 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
     public void onResume() {
         super.onResume();
         getSupportActionBar().setTitle("Artists");
+        mSyncStatusObserver.onStatusChanged(0);
 
+        // Watch for sync state changes
+        final int mask = ContentResolver.SYNC_OBSERVER_TYPE_PENDING |
+                ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE;
+        mSyncObserverHandle = ContentResolver.addStatusChangeListener(mask, mSyncStatusObserver);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mSyncObserverHandle != null) {
+            ContentResolver.removeStatusChangeListener(mSyncObserverHandle);
+            mSyncObserverHandle = null;
+        }
     }
 
 //    @Override
@@ -179,6 +202,8 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             Log.i(TAG, "trying to restore listview state..");
             mListView.onRestoreInstanceState(mListViewState);
         }
+
+        //mLoadingTextView.setVisibility(View.GONE);
 //        if (mPosition != ListView.INVALID_POSITION) {
 //            Log.i(TAG, "changing position");
 //            // If we don't need to restart the loader, and there's a desired position to restore
@@ -212,7 +237,7 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
             // Inform the system that this account supports sync
             ContentResolver.setIsSyncable(account, ArtistsContract.CONTENT_AUTHORITY, 1);
             // Inform the system that this account is eligible for auto sync when the network is up
-            ContentResolver.setSyncAutomatically(account, ArtistsContract.CONTENT_AUTHORITY, true);
+            //ContentResolver.setSyncAutomatically(account, ArtistsContract.CONTENT_AUTHORITY, true);
             // Recommend a schedule for automatic synchronization. The system may modify this based
             // on other scheduled syncs and network utilization.
 //            ContentResolver.addPeriodicSync(
@@ -256,5 +281,43 @@ public class ArtistListActivity extends AppCompatActivity implements LoaderManag
         super.onSaveInstanceState(outState);
     }
 
+    private SyncStatusObserver mSyncStatusObserver = new SyncStatusObserver() {
+        /** Callback invoked with the sync adapter status changes. */
+        @Override
+        public void onStatusChanged(int which) {
+            runOnUiThread(new Runnable() {
+                /**
+                 * The SyncAdapter runs on a background thread. To update the UI, onStatusChanged()
+                 * runs on the UI thread.
+                 */
+                @Override
+                public void run() {
+                    // Create a handle to the account that was created by
+                    // SyncService.CreateSyncAccount(). This will be used to query the system to
+                    // see how the sync status has changed.
+                    Account account = new Account(Authenticator.ACCOUNT, Authenticator.ACCOUNT_TYPE);
+                    if (account == null) {
+                        // GetAccount() returned an invalid value. This shouldn't happen, but
+                        // we'll set the status to "not refreshing".
+                        Log.e(TAG, "Account error");
+                        return;
+                    }
+
+                    // Test the ContentResolver to see if the sync adapter is active or pending.
+                    // Set the state of the refresh button accordingly.
+                    boolean syncActive = ContentResolver.isSyncActive(
+                            account, ArtistsContract.CONTENT_AUTHORITY);
+                    boolean syncPending = ContentResolver.isSyncPending(
+                            account, ArtistsContract.CONTENT_AUTHORITY);
+                    if (syncActive || syncPending) {
+                        mLoadingBar.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        mLoadingBar.setVisibility(View.GONE);
+                    }
+                }
+            });
+        }
+    };
 
 }
