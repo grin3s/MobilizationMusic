@@ -8,5 +8,5 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
-    tools:context="com.example.grin.mobilizationmusic.ArtistListActivity"
+    tools:context=".MainActivity"
     tools:listitem="@layout/artist_list_content" />

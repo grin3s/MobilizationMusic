@@ -1,12 +1,10 @@
 package com.example.grin.mobilizationmusic;
 
-import android.app.Activity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
@@ -24,7 +22,7 @@ import com.squareup.picasso.Picasso;
 
 /**
  * A fragment representing a single Artist detail screen.
- * This fragment is either contained in a {@link ArtistListActivity}
+ * This fragment is either contained in a {@link MainActivity}
  * in two-pane mode (on tablets) or a {@link ArtistDetailActivity}
  * on handsets.
  */
