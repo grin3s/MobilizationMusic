@@ -21,6 +21,7 @@ import com.example.grin.mobilizationmusic.ArtistDetailActivity;
 import com.example.grin.mobilizationmusic.ArtistListAdapter;
 import com.example.grin.mobilizationmusic.MainActivity;
 import com.example.grin.mobilizationmusic.R;
+import com.example.grin.mobilizationmusic.loader.ArtistLoader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -31,12 +32,13 @@ import com.squareup.picasso.Picasso;
  * on handsets.
  */
 public class ArtistDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+    public static final String ARTIST_ID_KEY = "atrist_id";
     // tag for logging functions
     private static String TAG = "ArtistDetailFragment";
     // the key to extract from arguments containing the uri to fetch from the content provider
     public static String DETAIL_URI = "URI";
-    // this uri
-    private Uri mUri;
+
+    private int artist_id;
 
     private ImageView mImageView;
     private ProgressBar mProgressBar;
@@ -67,7 +69,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
         // fetching content uri from the arguments
         Bundle arguments = getArguments();
         if (arguments != null) {
-            mUri = arguments.getParcelable(DETAIL_URI);
+            artist_id = arguments.getInt(ARTIST_ID_KEY);
         }
 
         // getting all views
@@ -89,19 +91,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (mUri != null) {
-            // Now create and return a CursorLoader that will take care of
-            // creating a Cursor for the data being displayed.
-            return new CursorLoader(
-                    getActivity(),
-                    mUri,
-                    null,
-                    null,
-                    null,
-                    null
-            );
-        }
-        return null;
+        return new ArtistLoader(getContext(), artist_id);
     }
 
     @Override
@@ -122,7 +112,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
                 }
             });
             // populating other views
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
+            //((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
             mGenresView.setText(data.getString(ArtistListAdapter.COLUMN_GENRES));
             mAlbumsTracksView.setText(String.format(ArtistListAdapter.sAlbumsTracksTemplate, data.getInt(ArtistListAdapter.COLUMN_ALBUMS), ArtistListAdapter.COLUMN_TRACKS));
             mBiographyView.setText(data.getString(ArtistListAdapter.COLUMN_DESCRIPTION));

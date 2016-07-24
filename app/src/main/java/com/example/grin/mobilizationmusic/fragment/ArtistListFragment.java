@@ -1,5 +1,6 @@
 package com.example.grin.mobilizationmusic.fragment;
 
+import android.net.Uri;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.database.Cursor;
@@ -9,11 +10,15 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.grin.mobilizationmusic.ArtistListAdapter;
+import com.example.grin.mobilizationmusic.MainActivity;
 import com.example.grin.mobilizationmusic.R;
 import com.example.grin.mobilizationmusic.loader.AllArtistsLoader;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by grin3s on 20.07.16.
@@ -34,35 +39,28 @@ public class ArtistListFragment extends Fragment implements LoaderManager.Loader
         mAdapter = new ArtistListAdapter(getContext(), null, 0);
 
         mListView.setAdapter(mAdapter);
-//        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-//                // building URI which can be used to fetch the current artist's info, which is then passed to the detail fragment
-//                Uri contentUri = ArtistsContract.Artist.buildArtistById(cursor.getInt(ArtistListAdapter.COLUMN_ID));
-//                if (mTwoPane) {
-//                    // In two-pane mode, show the detail view in this activity by
-//                    // adding or replacing the detail fragment using a
-//                    // fragment transaction.
-//                    Bundle args = new Bundle();
-//                    args.putParcelable(ArtistDetailFragment.DETAIL_URI, contentUri);
-//
-//                    ArtistDetailFragment fragment = new ArtistDetailFragment();
-//                    fragment.setArguments(args);
-//
-//                    getSupportFragmentManager().beginTransaction()
-//                            .replace(R.id.artist_detail_container, fragment, DETAILFRAGMENT_TAG)
-//                            .commit();
-//                } else {
-//                    // in a small screen we start a new activity with an Intent
-//                    Intent intent = new Intent(mContext, ArtistDetailActivity.class)
-//                            .setData(contentUri);
-//                    startActivity(intent);
-//                }
-//            }
-//        });
+        mListView.setOnItemClickListener(new ArtistClickListener((MainActivity) getActivity()));
         getLoaderManager().initLoader(0, null, this);
         return rootView;
+    }
+
+    private static class ArtistClickListener implements AdapterView.OnItemClickListener {
+
+        WeakReference<MainActivity> activityRef;
+
+        ArtistClickListener(MainActivity mainActivity) {
+            activityRef = new WeakReference<MainActivity>(mainActivity);
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            Cursor cursor = (Cursor) adapterView.getItemAtPosition(i);
+            // building URI which can be used to fetch the current artist's info, which is then passed to the detail fragment
+            MainActivity ref = activityRef.get();
+            if (ref != null) {
+                activityRef.get().launchDetails(cursor.getInt(ArtistListAdapter.COLUMN_ID));
+            }
+        }
     }
 
     @Override

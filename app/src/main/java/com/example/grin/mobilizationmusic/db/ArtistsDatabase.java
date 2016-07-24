@@ -115,6 +115,19 @@ public class ArtistsDatabase extends SQLiteOpenHelper {
         );
     }
 
+    public Cursor getArtistById(int artist_id) {
+        SQLiteDatabase db = getReadableDatabase();
+        return mQueryBuilder.query(
+                db,
+                null,
+                Artist._ID + " = ? ",
+                new String[]{Integer.toString(artist_id)},
+                null,
+                null,
+                null
+        );
+    }
+
     public void insertArtists(ContentValues[] values) {
         final SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();

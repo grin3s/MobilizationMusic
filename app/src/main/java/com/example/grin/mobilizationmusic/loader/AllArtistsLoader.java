@@ -27,6 +27,7 @@ public class AllArtistsLoader extends AsyncTaskLoader<Cursor> {
     private ArtistsDatabase artistDb;
 
     private Cursor mData;
+    private int artist_id;
 
     public AllArtistsLoader(Context context) {
         super(context);

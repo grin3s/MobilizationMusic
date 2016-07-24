@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 
+import com.example.grin.mobilizationmusic.fragment.ArtistDetailFragment;
 import com.example.grin.mobilizationmusic.fragment.ArtistListFragment;
 
 /**
@@ -249,5 +250,18 @@ public class MainActivity extends AppCompatActivity {
 //            });
 //        }
 //    };
+
+    public void launchDetails(int artist_id) {
+        Bundle args = new Bundle();
+        args.putInt(ArtistDetailFragment.ARTIST_ID_KEY, artist_id);
+
+        ArtistDetailFragment fragment = new ArtistDetailFragment();
+        fragment.setArguments(args);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_frame_layout, fragment)
+                .addToBackStack(DETAILFRAGMENT_TAG)
+                .commit();
+    }
 
 }
