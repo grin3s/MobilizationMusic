@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
+import com.example.grin.mobilizationmusic.fragment.ArtistDetailFragment;
+
 /**
  * An activity representing a single Artist detail screen. This
  * activity is only used narrow width devices. On tablet-size devices,

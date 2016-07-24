@@ -1,34 +1,18 @@
 package com.example.grin.mobilizationmusic;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SyncStatusObserver;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
-import android.view.View;
-
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
 
-
-import com.example.grin.mobilizationmusic.authentication.Authenticator;
-import com.example.grin.mobilizationmusic.provider.ArtistsContract;
+import com.example.grin.mobilizationmusic.fragment.ArtistListFragment;
 
 /**
  * An activity representing a list of Artists. This activity

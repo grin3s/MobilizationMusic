@@ -19,30 +19,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name="com.example.grin.mobilizationmusic.authentication.AuthenticatorService">
-            <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator"/>
-            </intent-filter>
-            <meta-data
-                android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator" />
-        </service>
-        <service
-            android:name="com.example.grin.mobilizationmusic.SyncService"
-            android:exported="true"
-            android:process=":sync">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
-            </intent-filter>
-            <meta-data android:name="android.content.SyncAdapter"
-                android:resource="@xml/syncadapter" />
-        </service>
-        <provider
-            android:name="com.example.grin.mobilizationmusic.provider.ArtistsProvider"
-            android:authorities="com.example.grin.mobilizationmusic.provider"
-            android:exported="false"
-            android:syncable="true"/>
     </application>
     <uses-permission
         android:name="android.permission.INTERNET"/>

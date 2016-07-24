@@ -42,7 +42,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     /**
      * Network connection timeout, in milliseconds.
      */
-    private static final int NET_CONNECT_TIMEOUT_MILLIS = 15000;  // 15 seconds
+    private static final int NET_CONNECT_TIMEOUT_MILLIS = 1500;  // 15 seconds
 
     /**
      * Network read timeout, in milliseconds.

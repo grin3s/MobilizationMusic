@@ -1,4 +1,4 @@
-package com.example.grin.mobilizationmusic;
+package com.example.grin.mobilizationmusic.fragment;
 
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -17,6 +17,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.grin.mobilizationmusic.ArtistDetailActivity;
+import com.example.grin.mobilizationmusic.ArtistListAdapter;
+import com.example.grin.mobilizationmusic.MainActivity;
+import com.example.grin.mobilizationmusic.R;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
