@@ -6,8 +6,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -61,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //
 //        //adding the toolbar to the activity
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 //
 //        //circle progress bar that rotates while sync adapter is fetching data
 //        mLoadingBar = (ProgressBar) findViewById(R.id.loading_bar);
@@ -116,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 //        // setting the title of an action bar
-//        getSupportActionBar().setTitle("Artists");
+        getSupportActionBar().setTitle("Artists");
 //
 //        // creating an observer that looks at the status of the sync adapter. We use it to hide mLoadingBar later
 //        mSyncStatusObserver.onStatusChanged(0);
@@ -262,6 +264,15 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.main_frame_layout, fragment)
                 .addToBackStack(DETAILFRAGMENT_TAG)
                 .commit();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return false;
     }
 
 }

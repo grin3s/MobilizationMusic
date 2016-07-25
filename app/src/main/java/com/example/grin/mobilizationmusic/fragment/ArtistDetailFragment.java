@@ -72,6 +72,9 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
             artist_id = arguments.getInt(ARTIST_ID_KEY);
         }
 
+        ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((MainActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         // getting all views
         mImageView = (ImageView) rootView.findViewById(R.id.detail_image_view);
         mProgressBar = (ProgressBar) rootView.findViewById(R.id.detail_image_progress_bar);
