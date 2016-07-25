@@ -31,8 +31,6 @@ public class ArtistListFragment extends Fragment implements LoaderManager.Loader
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        ((MainActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(false);
         //list view holding all artists
         View rootView = inflater.inflate(R.layout.artist_list, container, false);
         mListView = (ListView) rootView.findViewById(R.id.artist_list);
@@ -83,6 +81,9 @@ public class ArtistListFragment extends Fragment implements LoaderManager.Loader
             mListView.onRestoreInstanceState(mListViewState);
             mListViewState = null;
         }
+        ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        ((MainActivity) getActivity()).getSupportActionBar().setDisplayShowHomeEnabled(false);
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle("Artists");
         mAdapter.swapCursor(data);
     }
 

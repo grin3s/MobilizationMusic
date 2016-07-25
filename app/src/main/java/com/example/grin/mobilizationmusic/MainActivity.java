@@ -2,7 +2,10 @@ package com.example.grin.mobilizationmusic;
 
 import android.accounts.Account;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private static Parcelable mListViewState = null;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private Object mSyncObserverHandle;
+    private MusicIntentReceiver headsetReceiver;
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -52,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.main_layout);
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_frame_layout, new ArtistListFragment()).commit();
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_frame_layout, new ArtistListFragment()).commit();
+        }
 
 //        if (findViewById(R.id.artist_detail_container) != null) {
 //            // The detail container view will be present only in the
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 //        //adding the toolbar to the activity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        headsetReceiver = new MusicIntentReceiver();
 //
 //        //circle progress bar that rotates while sync adapter is fetching data
 //        mLoadingBar = (ProgressBar) findViewById(R.id.loading_bar);
@@ -118,7 +125,8 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 //        // setting the title of an action bar
-        getSupportActionBar().setTitle("Artists");
+        IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        registerReceiver(headsetReceiver, filter);
 //
 //        // creating an observer that looks at the status of the sync adapter. We use it to hide mLoadingBar later
 //        mSyncStatusObserver.onStatusChanged(0);
@@ -132,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         super.onPause();
-
+        unregisterReceiver(headsetReceiver);
 //        // have to do this
 //        if (mSyncObserverHandle != null) {
 //            ContentResolver.removeStatusChangeListener(mSyncObserverHandle);
@@ -273,6 +281,26 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+
+    private static class MusicIntentReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+                int state = intent.getIntExtra("state", -1);
+                switch (state) {
+                    case 0:
+                        Log.d(TAG, "Headset is unplugged");
+                        break;
+                    case 1:
+                        Log.d(TAG, "Headset is plugged");
+                        break;
+                    default:
+                        Log.d(TAG, "I have no idea what the headset state is");
+                }
+            }
+        }
     }
 
 }

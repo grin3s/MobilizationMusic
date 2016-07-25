@@ -115,7 +115,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
                 }
             });
             // populating other views
-            //((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
+            ((MainActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
             mGenresView.setText(data.getString(ArtistListAdapter.COLUMN_GENRES));
             mAlbumsTracksView.setText(String.format(ArtistListAdapter.sAlbumsTracksTemplate, data.getInt(ArtistListAdapter.COLUMN_ALBUMS), ArtistListAdapter.COLUMN_TRACKS));
             mBiographyView.setText(data.getString(ArtistListAdapter.COLUMN_DESCRIPTION));
