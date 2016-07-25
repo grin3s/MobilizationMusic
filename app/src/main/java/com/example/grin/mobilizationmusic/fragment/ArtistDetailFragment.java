@@ -17,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.grin.mobilizationmusic.ArtistDetailActivity;
 import com.example.grin.mobilizationmusic.ArtistListAdapter;
 import com.example.grin.mobilizationmusic.MainActivity;
 import com.example.grin.mobilizationmusic.R;
@@ -28,7 +27,6 @@ import com.squareup.picasso.Picasso;
 /**
  * A fragment representing a single Artist detail screen.
  * This fragment is either contained in a {@link MainActivity}
- * in two-pane mode (on tablets) or a {@link ArtistDetailActivity}
  * on handsets.
  */
 public class ArtistDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
@@ -46,13 +44,6 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
     private TextView mAlbumsTracksView;
     private TextView mBiographyView;
 
-
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public ArtistDetailFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -117,7 +108,7 @@ public class ArtistDetailFragment extends Fragment implements LoaderManager.Load
             // populating other views
             ((MainActivity) getActivity()).getSupportActionBar().setTitle(data.getString(ArtistListAdapter.COLUMN_NAME));
             mGenresView.setText(data.getString(ArtistListAdapter.COLUMN_GENRES));
-            mAlbumsTracksView.setText(String.format(ArtistListAdapter.sAlbumsTracksTemplate, data.getInt(ArtistListAdapter.COLUMN_ALBUMS), ArtistListAdapter.COLUMN_TRACKS));
+            mAlbumsTracksView.setText(String.format(ArtistListAdapter.sAlbumsTracksTemplate, data.getInt(ArtistListAdapter.COLUMN_ALBUMS), data.getInt(ArtistListAdapter.COLUMN_TRACKS)));
             mBiographyView.setText(data.getString(ArtistListAdapter.COLUMN_DESCRIPTION));
         }
     }

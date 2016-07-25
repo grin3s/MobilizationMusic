@@ -286,22 +286,6 @@ public class AllArtistsLoader extends AsyncTaskLoader<Cursor> {
         }
     }
 
-    /*********************************************************************/
-    /** (4) Observer which receives notifications when the data changes **/
-    /*********************************************************************/
-
-    // NOTE: Implementing an observer is outside the scope of this post (this example
-    // uses a made-up "SampleObserver" to illustrate when/where the observer should
-    // be initialized).
-
-    // The observer could be anything so long as it is able to detect content changes
-    // and report them to the loader with a call to onContentChanged(). For example,
-    // if you were writing a Loader which loads a list of all installed applications
-    // on the device, the observer could be a BroadcastReceiver that listens for the
-    // ACTION_PACKAGE_ADDED intent, and calls onContentChanged() on the particular
-    // Loader whenever the receiver detects that a new application has been installed.
-    // Please don’t hesitate to leave a comment if you still find this confusing! :)
-    //private SampleObserver mObserver;
 
     /**
      * Network connection timeout, in milliseconds.

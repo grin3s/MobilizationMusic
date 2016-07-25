@@ -9,8 +9,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import com.example.grin.mobilizationmusic.provider.ArtistsContract;
-
 
 /**
 * Created by grin3s on 22.07.16.
@@ -32,16 +30,9 @@ public class ArtistsDatabase extends SQLiteOpenHelper {
 
     // Artists table
     public static class Artist implements BaseColumns {
-        // resource uri
-//        public static final Uri CONTENT_URI =
-//                BASE_CONTENT_URI.buildUpon().appendPath(PATH_ARTISTS).build();
 
         public static final String TABLE_NAME = "artists";
 
-//        public static final String CONTENT_TYPE =
-//                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTISTS;
-//        public static final String CONTENT_ITEM_TYPE =
-//                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_ARTISTS;
 
         // columns
         public static final String COLUMN_NAME_NAME = "name";
@@ -52,9 +43,6 @@ public class ArtistsDatabase extends SQLiteOpenHelper {
         public static final String COLUMN_NAME_GENRES = "genres";
         public static final String COLUMN_NAME_DESCRITION = "description";
 
-//        public static Uri buildArtistById(int artist_id) {
-//            return CONTENT_URI.buildUpon().appendPath(Integer.toString(artist_id)).build();
-//        }
     }
 
     /** Schema version. */
