@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -285,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private static class MusicIntentReceiver extends BroadcastReceiver {
+        private static int last_state = -1;
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
@@ -299,6 +301,15 @@ public class MainActivity extends AppCompatActivity {
                     default:
                         Log.d(TAG, "I have no idea what the headset state is");
                 }
+                if (last_state != -1) {
+                    if ((last_state != state) && (state == 1)) {
+                        Log.d(TAG, "Starting music player");
+                        Intent musicIntent = new Intent(MediaStore.INTENT_ACTION_MUSIC_PLAYER);
+
+                        context.startActivity(musicIntent);
+                    }
+                }
+                last_state = state;
             }
         }
     }
