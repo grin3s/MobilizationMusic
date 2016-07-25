@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 
 
+import com.example.grin.mobilizationmusic.fragment.AboutFragment;
 import com.example.grin.mobilizationmusic.fragment.ArtistDetailFragment;
 import com.example.grin.mobilizationmusic.fragment.ArtistListFragment;
 
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     public final static String TAG = "MainActivity";
     private static Parcelable mListViewState = null;
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private static final String ABOUTFRAGMENT_TAG = "ABOUTTAG";
     private Object mSyncObserverHandle;
     private MusicIntentReceiver headsetReceiver;
 
@@ -292,6 +294,11 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 }
                 return true;
+            case R.id.action_about:
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.main_frame_layout, new AboutFragment())
+                        .addToBackStack(ABOUTFRAGMENT_TAG)
+                        .commit();
             default:
                 return false;
         }
@@ -333,8 +340,6 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main_menu, menu);
 
 //        main_menu.addSubMenu(0, 0, 0, "sadfasdf");
-
-        menu.addSubMenu(0, Menu.NONE, 1, "About");
 
         return true;
     }
