@@ -1,27 +1,13 @@
-package com.example.grin.mobilizationmusic;
+package com.example.grin.mobilizationmusic.loader;
 
-import android.accounts.Account;
-import android.annotation.TargetApi;
-import android.content.AbstractThreadedSyncAdapter;
-import android.content.ContentProviderClient;
-import android.content.ContentProviderOperation;
-import android.content.ContentResolver;
+import android.support.v4.content.AsyncTaskLoader;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.OperationApplicationException;
-import android.content.SyncResult;
 import android.database.Cursor;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.RemoteException;
 import android.util.JsonReader;
 import android.util.Log;
 
-import com.example.grin.mobilizationmusic.provider.ArtistsContract;
-
-import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParserException;
+import com.example.grin.mobilizationmusic.db.ArtistsDatabase;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,33 +15,27 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
-public class SyncAdapter extends AbstractThreadedSyncAdapter {
-    public static final String TAG = "SyncAdapter";
+/**
+ * Created by grin3s on 22.07.16.
+ */
+public class AllArtistsLoader extends AsyncTaskLoader<Cursor> {
 
     private static final String SERVER_ENDPOINT_URL = "http://download.cdn.yandex.net/mobilization-2016/artists.json";
+    private static String TAG = "MobilizationMusic:AllArtistsLoader";
+    private ArtistsDatabase artistDb;
 
-    /**
-     * Network connection timeout, in milliseconds.
-     */
-    private static final int NET_CONNECT_TIMEOUT_MILLIS = 15000;  // 15 seconds
+    private Cursor mData;
+    private int artist_id;
 
-    /**
-     * Network read timeout, in milliseconds.
-     */
-    private static final int NET_READ_TIMEOUT_MILLIS = 10000;  // 10 seconds
-
-    /**
-     * Content resolver, for performing database operations.
-     */
-    private final ContentResolver mContentResolver;
+    public AllArtistsLoader(Context context) {
+        super(context);
+        artistDb = ArtistsDatabase.getInstance(context.getApplicationContext());
+    }
 
     // a class, where the artist's data is stored before passing it to the database
-    private class ArtistData {
+    private static class ArtistData {
         String name;
         String small_cover;
         String large_cover;
@@ -79,24 +59,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             genres = in_genres;
             description = in_description;
         }
-    }
-
-
-    /**
-     * Constructor. Obtains handle to content resolver for later use.
-     */
-    public SyncAdapter(Context context, boolean autoInitialize) {
-        super(context, autoInitialize);
-        mContentResolver = context.getContentResolver();
-    }
-
-    /**
-     * Constructor. Obtains handle to content resolver for later use.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
-        super(context, autoInitialize, allowParallelSyncs);
-        mContentResolver = context.getContentResolver();
     }
 
     // parsing JSON from the server
@@ -169,9 +131,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return artists;
     }
 
+
+
+    /****************************************************/
+    /** (1) A task that performs the asynchronous load **/
+    /****************************************************/
+
     @Override
-    public void onPerformSync(Account account, Bundle extras, String authority,
-                              ContentProviderClient provider, SyncResult syncResult) {
+    public Cursor loadInBackground() {
         Log.i(TAG, "Beginning network synchronization");
         try {
             final URL location = new URL(SERVER_ENDPOINT_URL);
@@ -189,15 +156,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.i(TAG, Integer.toString(artists.size()));
                 for (int i = 0; i < artists.size(); i++) {
                     cvArray[i] = new ContentValues();
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_NAME, artists.get(i).name);
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_SMALL_COVER, artists.get(i).small_cover);
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_LARGE_COVER, artists.get(i).large_cover);
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_TRACKS, artists.get(i).tracks);
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_ALBUMS, artists.get(i).albums);
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_GENRES, artists.get(i).genres);
-                    cvArray[i].put(ArtistsContract.Artist.COLUMN_NAME_DESCRITION, artists.get(i).description);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_NAME, artists.get(i).name);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_SMALL_COVER, artists.get(i).small_cover);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_LARGE_COVER, artists.get(i).large_cover);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_TRACKS, artists.get(i).tracks);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_ALBUMS, artists.get(i).albums);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_GENRES, artists.get(i).genres);
+                    cvArray[i].put(ArtistsDatabase.Artist.COLUMN_NAME_DESCRITION, artists.get(i).description);
                 }
-                getContext().getContentResolver().bulkInsert(ArtistsContract.Artist.CONTENT_URI, cvArray);
+                artistDb.insertArtists(cvArray);
+                Log.i(TAG, "Network synchronization complete");
             } finally {
                 // Makes sure that the InputStream is closed after the app is
                 // finished using it.
@@ -207,20 +175,128 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
         } catch (MalformedURLException e) {
             Log.e(TAG, "URL is malformed", e);
-            syncResult.stats.numParseExceptions++;
-            return;
         } catch (IOException e) {
             Log.e(TAG, "Error reading from network: " + e.toString());
-            syncResult.stats.numIoExceptions++;
-            return;
         }
-        Log.i(TAG, "Network synchronization complete");
+
+        return artistDb.getAllArtists();
     }
 
+    /********************************************************/
+    /** (2) Deliver the results to the registered listener **/
+    /********************************************************/
+
+    @Override
+    public void deliverResult(Cursor data) {
+        if (isReset()) {
+            // The Loader has been reset; ignore the result and invalidate the data.
+            releaseResources(data);
+            return;
+        }
+
+        // Hold a reference to the old data so it doesn't get garbage collected.
+        // We must protect it until the new data has been delivered.
+        Cursor oldData = mData;
+        mData = data;
+
+        if (isStarted()) {
+            // If the Loader is in a started state, deliver the results to the
+            // client. The superclass method does this for us.
+            super.deliverResult(data);
+        }
+
+        // Invalidate the old data as we don't need it any more.
+        if (oldData != null && oldData != data) {
+            releaseResources(oldData);
+        }
+    }
+
+    /*********************************************************/
+    /** (3) Implement the Loader’s state-dependent behavior **/
+    /*********************************************************/
+
+    @Override
+    protected void onStartLoading() {
+        if (mData != null) {
+            // Deliver any previously loaded data immediately.
+            deliverResult(mData);
+        }
+
+        // Begin monitoring the underlying data source.
+//        if (mObserver == null) {
+//            mObserver = new SampleObserver();
+//            register observer
+//        }
+
+        if (takeContentChanged() || mData == null) {
+            // When the observer detects a change, it should call onContentChanged()
+            // on the Loader, which will cause the next call to takeContentChanged()
+            // to return true. If this is ever the case (or if the current data is
+            // null), we force a new load.
+            forceLoad();
+        }
+    }
+
+    @Override
+    protected void onStopLoading() {
+        // The Loader is in a stopped state, so we should attempt to cancel the
+        // current load (if there is one).
+        cancelLoad();
+
+        // Note that we leave the observer as is. Loaders in a stopped state
+        // should still monitor the data source for changes so that the Loader
+        // will know to force a new load if it is ever started again.
+    }
+
+    @Override
+    protected void onReset() {
+        super.onReset();
+        // Ensure the loader has been stopped.
+        onStopLoading();
+
+        // At this point we can release the resources associated with 'mData'.
+        if (mData != null) {
+            releaseResources(mData);
+            mData = null;
+        }
+
+        // The Loader is being reset, so we should stop monitoring for changes.
+//        if (mObserver != null) {
+//            // TODO: unregister the observer
+//            mObserver = null;
+//        }
+    }
+
+    @Override
+    public void onCanceled(Cursor data) {
+        // Attempt to cancel the current asynchronous load.
+        super.onCanceled(data);
+
+        // The load has been canceled, so we should release the resources
+        // associated with 'data'.
+        releaseResources(data);
+    }
+
+    private void releaseResources(Cursor data) {
+        // For a simple List, there is nothing to do. For something like a Cursor, we
+        // would close it in this method. All resources associated with the Loader
+        // should be released here.
+        if (data != null) {
+            data.close();
+        }
+    }
+
+
     /**
-     * Given a string representation of a URL, sets up a connection and gets an input stream.
-     * Taken from one of the many examples from the docs
+     * Network connection timeout, in milliseconds.
      */
+    private static final int NET_CONNECT_TIMEOUT_MILLIS = 1500;  // 15 seconds
+
+    /**
+     * Network read timeout, in milliseconds.
+     */
+    private static final int NET_READ_TIMEOUT_MILLIS = 10000;  // 10 seconds
+
     private InputStream downloadUrl(final URL url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setReadTimeout(NET_READ_TIMEOUT_MILLIS /* milliseconds */);

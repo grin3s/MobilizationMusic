@@ -79,6 +79,7 @@ public class ArtistListAdapter extends CursorAdapter {
             @Override
             public void onSuccess() {
                 // the image is loaded, we can hide the progress bar circle
+                // TODO: memory leak??
                 viewHolder.progressView.setVisibility(View.GONE);
             }
 

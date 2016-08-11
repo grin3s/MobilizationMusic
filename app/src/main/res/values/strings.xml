@@ -2,4 +2,10 @@
     <string name="app_name">MobilizationMusic</string>
     <string name="title_artist_detail">Artist Detail</string>
     <string name="albums_and_tracks_template">%1$d albums, %2$d tracks</string>
+    <string name="settings">settings</string>
+    <string name="feedback">feedback</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="about">About</string>
 </resources>
